@@ -345,7 +345,7 @@ async function fetchPrices(domain, tld) {
         renewalPrice: cfPrice.renewal,
         transferPrice: cfPrice.reg,
         currency: 'USD',
-        purchaseUrl: 'https://www.cloudflare.com/products/registrar/',
+        purchaseUrl: `https://dash.cloudflare.com/?to=/:account/domains/register/${domain.split('.')[0]}`,
         promoCode: null,
         whoisPrivacyFree: true,
         score3y: cfPrice.reg + cfPrice.renewal * 2,

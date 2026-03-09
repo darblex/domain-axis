@@ -114,7 +114,8 @@ app.get('/api/prices', async (req, res) => {
     const searchDomain = domain || `example.${searchTld || 'com'}`;
     if (!searchTld && !domain) return res.status(400).json({ error: 'domain or tld parameter required' });
 
-    const cacheKey = `prices:${searchTld || domain}`;
+    // Cache by full domain (not just TLD) — purchaseUrls are domain-specific
+    const cacheKey = `prices:${searchDomain}`;
     const cached = priceCache.get(cacheKey);
     if (cached) return res.json(cached);
 
