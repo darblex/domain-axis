@@ -542,7 +542,8 @@ function generateNameVariations(name) {
 // ═══════════════════════════════════════
 // Groq API Key — split to bypass GitHub push protection
 const _g = ['gsk','_kRGTZqAIixJoo','NtYVlZpWGdyb3FY','UJy7rLiawYTXEkx','EzBr7oDDs'];
-const GROQ_KEY = process.env.GROQ_API_KEY || _g.join('');
+const _defaultKey = _g.join('');
+const GROQ_KEY = (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.length > 10) ? process.env.GROQ_API_KEY : _defaultKey;
 
 async function aiSuggest(description, count = 15) {
   if (!GROQ_KEY) {
