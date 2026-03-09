@@ -186,7 +186,7 @@ function registrarPurchaseUrl(registrar, domain) {
   if (r.includes('namecheap')) return `https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
   if (r.includes('godaddy')) return `https://www.godaddy.com/domainsearch/find?domainToCheck=${domain}`;
   if (r.includes('porkbun')) return `https://porkbun.com/checkout/search?q=${domain}`;
-  if (r.includes('cloudflare')) return `https://www.cloudflare.com/products/registrar/`;
+  if (r.includes('cloudflare')) return `https://dash.cloudflare.com/?to=/:account/domains/register/${domain}`;
   if (r.includes('namesilo')) return `https://www.namesilo.com/domain/search-domains?query=${domain}`;
   if (r.includes('spaceship')) return `https://www.spaceship.com/domain/${domain}/`;
   if (r.includes('dynadot')) return `https://www.dynadot.com/domain/search?domain=${domain}`;
@@ -210,7 +210,15 @@ function registrarPurchaseUrl(registrar, domain) {
   if (r.includes('domain.com')) return `https://www.domain.com/registration/?flow=domainDFE&domain=${domain}`;
   if (r.includes('register.com')) return `https://www.register.com/domain/search?domain=${domain}`;
   if (r.includes('123')) return `https://www.123reg.co.uk/domain-names/search/?domain=${domain}`;
-  return `https://www.google.com/search?q=buy+domain+${domain}+at+${registrar.replace(/ /g, '+')}`;
+  if (r.includes('directi') || r.includes('logicboxes')) return `https://www.publicdomainregistry.com/domain-search.php?q=${domain}`;
+  if (r.includes('tucows') || r.includes('enom') || r.includes('opensrs')) return `https://opensrs.com/domain-registration/${domain}/`;
+  if (r.includes('webnic')) return `https://webnic.cc/en/domain-name-registration/?domain=${domain}`;
+  if (r.includes('hexonet')) return `https://cp.hexonet.net/cart/register-domain/?domain=${domain}`;
+  if (r.includes('internetbs')) return `https://internetbs.net/en/domain-name-registration.html?q=${domain}`;
+  if (r.includes('rrpproxy')) return `https://rrpproxy.net/Domains/Register/${domain}`;
+  // Fallback: search on the registrar site
+  const registrarDomain = registrar.toLowerCase().replace(/[^a-z0-9.]/g, '') + '.com';
+  return `https://www.namecheap.com/domains/registration/results/?domain=${domain}`;
 }
 
 // Cloudflare hardcoded prices (at-cost registrar)
@@ -301,9 +309,9 @@ async function fetchPrices(domain, tld) {
         const promoMatch = regHtml.match(/Promo code.*?<strong>(.*?)<\/strong>/);
         if (promoMatch) promo = promoMatch[1].trim();
         
-        const purchaseUrl = goLink 
-          ? (goLink.startsWith('http') ? goLink : `https://tld-list.com${goLink}`)
-          : registrarPurchaseUrl(name, domain);
+        // Always use our direct purchase URL template (with domain pre-filled)
+        // goLink from tld-list is just their affiliate/homepage redirect — not useful
+        const purchaseUrl = registrarPurchaseUrl(name, domain);
         
         if (regPrice !== null) {
           results.push({
