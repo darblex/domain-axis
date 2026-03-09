@@ -1279,19 +1279,26 @@ async function doAiSuggest() {
     html += `<div class="ai-results">`;
     
     data.suggestions.forEach(s => {
-      const availClass = s.available ? 'yes' : 'no';
-      const availText = s.available ? '✅ Available' : '❌ Taken';
-      const priceText = s.available && s.price ? ` · $${s.price.toFixed(2)}` : '';
+      const anyAvail = s.available;
+      html += `<div class="ai-card" style="flex-direction:column;align-items:stretch;padding:.8rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+          <span class="ai-name" style="font-size:1.1rem">${s.name}</span>
+          <button class="ai-search-btn" onclick="searchDomain('${s.name}')" style="padding:.3rem .6rem">🔍 Scan all</button>
+        </div>
+        <div style="display:flex;gap:.3rem;flex-wrap:wrap">`;
       
-      html += `<div class="ai-card">
-        <div>
-          <span class="ai-name">${s.name}</span><span class="ai-com">.com</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:.4rem">
-          <span class="ai-avail ${availClass}">${availText}${priceText}</span>
-          <button class="ai-search-btn" onclick="searchDomain('${s.name}')">🔍</button>
-        </div>
-      </div>`;
+      if (s.extensions) {
+        s.extensions.forEach(e => {
+          const cls = e.available ? 'avail' : 'taken';
+          const price = e.available && e.price ? ` $${e.price.toFixed(0)}` : '';
+          html += `<span class="trend-ext ${cls}" style="cursor:pointer" onclick="searchDomain('${e.domain}')">.${e.tld}${price}</span>`;
+        });
+      } else {
+        const availClass = s.available ? 'yes' : 'no';
+        html += `<span class="ai-avail ${availClass}">${s.available ? '✅ .com available' : '❌ .com taken'}</span>`;
+      }
+      
+      html += `</div></div>`;
     });
     
     html += '</div>';

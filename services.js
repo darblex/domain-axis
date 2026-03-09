@@ -594,17 +594,38 @@ Description: "${description}"`;
       .map(n => n.toLowerCase().replace(/[^a-z0-9-]/g, ''))
       .filter(n => n.length >= 3 && n.length <= 15);
 
-    // Check availability for each name on .com
+    // Check availability across popular TLDs
+    const checkTlds = ['com', 'io', 'dev', 'app', 'co', 'ai'];
     const results = await Promise.allSettled(
       names.slice(0, 12).map(async name => {
-        const domain = `${name}.com`;
-        const check = await checkDNS(domain);
-        const cfPrice = CLOUDFLARE_PRICES['com'];
+        const tldChecks = await Promise.allSettled(
+          checkTlds.map(async tld => {
+            const domain = `${name}.${tld}`;
+            const check = await checkDNS(domain);
+            const cfPrice = CLOUDFLARE_PRICES[tld];
+            return {
+              tld,
+              domain,
+              available: check.available,
+              price: cfPrice?.reg || null,
+            };
+          })
+        );
+        
+        const extensions = tldChecks
+          .filter(r => r.status === 'fulfilled')
+          .map(r => r.value);
+        
+        const bestAvailable = extensions.find(e => e.available === true);
+        
         return {
           name,
-          domain,
-          available: check.available,
-          price: cfPrice?.reg || null,
+          domain: `${name}.com`,
+          available: extensions.some(e => e.available === true),
+          comAvailable: extensions.find(e => e.tld === 'com')?.available || false,
+          extensions,
+          bestDeal: bestAvailable ? { domain: bestAvailable.domain, price: bestAvailable.price } : null,
+          price: CLOUDFLARE_PRICES['com']?.reg || null,
         };
       })
     );
