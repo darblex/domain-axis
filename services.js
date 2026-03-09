@@ -537,4 +537,177 @@ function generateNameVariations(name) {
   return [...variations].slice(0, 15);
 }
 
-module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan };
+// ═══════════════════════════════════════
+// AI Domain Suggestions (Groq Free Tier)
+// ═══════════════════════════════════════
+const GROQ_KEY = process.env.GROQ_API_KEY || '';
+
+async function aiSuggest(description, count = 15) {
+  if (!GROQ_KEY) {
+    return { suggestions: [], error: 'GROQ_API_KEY not configured' };
+  }
+
+  const prompt = `You are a creative domain name generator. Given a business/project description, suggest ${count} short, memorable, brandable domain names.
+
+Rules:
+- Names should be 4-12 characters
+- Mix real words, invented words, and clever combinations
+- Include varied styles: compound words, portmanteaus, abbreviations, modern made-up words
+- Each name should be catchy and easy to remember/spell
+- DO NOT include TLD extensions (no .com, .io etc)
+- Return ONLY a JSON array of strings, nothing else
+
+Description: "${description}"`;
+
+  try {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.9,
+        max_tokens: 500
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      return { suggestions: [], error: `Groq API error: ${resp.status}` };
+    }
+
+    const data = await resp.json();
+    const content = data.choices?.[0]?.message?.content || '[]';
+    
+    // Parse JSON array from response
+    const match = content.match(/\[[\s\S]*?\]/);
+    if (!match) return { suggestions: [], error: 'Could not parse AI response' };
+    
+    const names = JSON.parse(match[0])
+      .map(n => n.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+      .filter(n => n.length >= 3 && n.length <= 15);
+
+    // Check availability for each name on .com
+    const results = await Promise.allSettled(
+      names.slice(0, 12).map(async name => {
+        const domain = `${name}.com`;
+        const check = await checkDNS(domain);
+        const cfPrice = CLOUDFLARE_PRICES['com'];
+        return {
+          name,
+          domain,
+          available: check.available,
+          price: cfPrice?.reg || null,
+        };
+      })
+    );
+
+    const suggestions = results
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value);
+
+    return {
+      description,
+      suggestions,
+      available: suggestions.filter(s => s.available).length,
+      total: suggestions.length,
+      model: 'llama-3.3-70b',
+      checkedAt: new Date().toISOString()
+    };
+  } catch (e) {
+    return { suggestions: [], error: e.message };
+  }
+}
+
+// ═══════════════════════════════════════
+// Trending Domains (scrape Google Trends + tech buzzwords)
+// ═══════════════════════════════════════
+const trendingCache = { data: null, ts: 0 };
+
+async function getTrending() {
+  // Cache for 1 hour
+  if (trendingCache.data && Date.now() - trendingCache.ts < 3600000) {
+    return trendingCache.data;
+  }
+
+  // Fetch current trending topics from multiple sources
+  const trends = [];
+  
+  // 1. Google Trends daily (via RSS)
+  try {
+    const resp = await fetch('https://trends.google.com/trending/rss?geo=US', {
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    const text = await resp.text();
+    const titles = [...text.matchAll(/<title><!\[CDATA\[(.*?)\]\]>/g)].map(m => m[1]);
+    titles.slice(0, 8).forEach(t => {
+      // Convert trend to domain-friendly name
+      const name = t.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 15);
+      if (name.length >= 3) trends.push({ name, source: 'google_trends', topic: t });
+    });
+  } catch {}
+
+  // 2. Tech/startup trending words
+  const techWords = [
+    'aiagent','deepseek','vibe','grokai','devin','sora','grok',
+    'claude','gemini','copilot','cursor','bolt','vzerox',
+    'openai','mistral','llama','perplexity','midjourney'
+  ];
+  
+  // Pick 6 random tech words
+  const shuffled = techWords.sort(() => Math.random() - 0.5);
+  shuffled.slice(0, 6).forEach(w => {
+    trends.push({ name: w, source: 'tech_trending', topic: w });
+  });
+
+  // 3. Check availability for all
+  const tlds = ['com', 'io', 'ai', 'dev', 'app'];
+  
+  const checked = await Promise.allSettled(
+    trends.slice(0, 12).map(async t => {
+      const domainChecks = await Promise.allSettled(
+        tlds.map(async tld => {
+          const domain = `${t.name}.${tld}`;
+          const check = await checkDNS(domain);
+          const cfPrice = CLOUDFLARE_PRICES[tld];
+          return {
+            domain,
+            tld,
+            available: check.available,
+            price: cfPrice?.reg || null
+          };
+        })
+      );
+      
+      const extensions = domainChecks
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value);
+      
+      return {
+        name: t.name,
+        topic: t.topic,
+        source: t.source,
+        extensions,
+        anyAvailable: extensions.some(e => e.available)
+      };
+    })
+  );
+
+  const result = {
+    trends: checked
+      .filter(r => r.status === 'fulfilled')
+      .map(r => r.value),
+    updatedAt: new Date().toISOString()
+  };
+  
+  trendingCache.data = result;
+  trendingCache.ts = Date.now();
+  return result;
+}
+
+module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan, aiSuggest, getTrending };

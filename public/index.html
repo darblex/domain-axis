@@ -314,6 +314,124 @@
     .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
     .empty h2 { font-size: 1.3rem; color: var(--text); margin-bottom: .5rem; }
 
+    /* ── Trending Section ── */
+    .trending-section {
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+    }
+    .trending-section h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    .trending-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: .6rem;
+    }
+    .trend-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .8rem 1rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .trend-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .trend-name { font-weight: 700; font-size: 1.05rem; margin-bottom: .4rem; }
+    .trend-topic { font-size: .8rem; color: var(--text2); margin-bottom: .5rem; }
+    .trend-exts { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .trend-ext {
+      font-size: .75rem;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .trend-ext.avail { background: rgba(16,185,129,.15); color: var(--green); }
+    .trend-ext.taken { background: rgba(239,68,68,.1); color: var(--red); opacity: .5; }
+
+    /* ── AI Suggest ── */
+    .ai-section {
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+    }
+    .ai-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+    .ai-box h2 {
+      font-size: 1.2rem;
+      margin-bottom: .5rem;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .ai-box p { color: var(--text2); font-size: .9rem; margin-bottom: 1rem; }
+    .ai-input-wrap {
+      display: flex;
+      gap: .5rem;
+    }
+    .ai-input-wrap input {
+      flex: 1;
+      padding: .8rem 1rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+    }
+    .ai-input-wrap input:focus { border-color: var(--accent2); }
+    .ai-input-wrap input::placeholder { color: var(--text2); }
+    .ai-input-wrap button {
+      padding: .8rem 1.2rem;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border: none;
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity .2s;
+    }
+    .ai-input-wrap button:hover { opacity: .85; }
+    .ai-results {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: .5rem;
+    }
+    .ai-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .6rem .8rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all .2s;
+    }
+    .ai-card:hover { border-color: var(--accent2); }
+    .ai-card .ai-name { font-weight: 600; font-size: 1rem; }
+    .ai-card .ai-com { color: var(--accent2); }
+    .ai-card .ai-avail { font-size: .8rem; font-weight: 600; }
+    .ai-card .ai-avail.yes { color: var(--green); }
+    .ai-card .ai-avail.no { color: var(--red); }
+    .ai-card .ai-search-btn {
+      padding: .25rem .5rem;
+      background: var(--accent2);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: .75rem;
+      cursor: pointer;
+    }
+
     /* ── Scan Results Grid ── */
     .scan-stats {
       display: flex;
@@ -525,10 +643,33 @@
     </div>
   </div>
 
-  <div id="emptyState" class="empty">
-    <div class="icon">🔍</div>
-    <h2 data-i18n="empty_title">Find Your Perfect Domain</h2>
-    <p data-i18n="empty_desc">Compare prices across 50+ registrars, check availability, WHOIS, DNS & SSL — all free.</p>
+  <div id="emptyState">
+    <div class="empty">
+      <div class="icon">🔍</div>
+      <h2 data-i18n="empty_title">Find Your Perfect Domain</h2>
+      <p data-i18n="empty_desc">Compare prices across 50+ registrars, check availability, WHOIS, DNS & SSL — all free.</p>
+    </div>
+
+    <!-- AI Name Generator -->
+    <div class="ai-section">
+      <div class="ai-box">
+        <h2>🤖 <span data-i18n="ai_title">AI Domain Name Generator</span></h2>
+        <p data-i18n="ai_desc">Describe your project and AI will generate creative domain names for you</p>
+        <div class="ai-input-wrap">
+          <input type="text" id="aiInput" placeholder="e.g. a fitness app for busy professionals" data-i18n-placeholder="ai_placeholder">
+          <button onclick="doAiSuggest()" data-i18n="ai_generate">✨ Generate</button>
+        </div>
+        <div id="aiResults"></div>
+      </div>
+    </div>
+
+    <!-- Trending Domains -->
+    <div class="trending-section">
+      <h2>🔥 <span data-i18n="trending_title">Trending Right Now</span></h2>
+      <div id="trendingGrid" class="trending-grid">
+        <div class="loading-overlay" style="padding:1rem"><div class="spinner"></div></div>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -580,6 +721,14 @@ const i18n = {
     scan_taken_short: 'Taken',
     scan_yr: 'yr',
     scan_compare: 'Compare Prices',
+    ai_title: 'AI Domain Name Generator',
+    ai_desc: 'Describe your project and AI will generate creative domain names',
+    ai_placeholder: 'e.g. a fitness app for busy professionals',
+    ai_generate: '✨ Generate',
+    ai_thinking: 'AI is thinking...',
+    ai_no_results: 'No suggestions generated. Try a different description.',
+    ai_generated: 'names generated',
+    trending_title: 'Trending Right Now',
   },
   he: {
     tagline: 'פלטפורמת חיפוש דומיינים חינמית',
@@ -618,6 +767,14 @@ const i18n = {
     scan_taken_short: 'תפוס',
     scan_yr: 'שנה',
     scan_compare: 'השווה מחירים',
+    ai_title: 'מחולל שמות AI',
+    ai_desc: 'תאר את הפרויקט שלך וה-AI ייצור שמות דומיין יצירתיים',
+    ai_placeholder: 'למשל: אפליקציית כושר לאנשים עסוקים',
+    ai_generate: '✨ צור שמות',
+    ai_thinking: 'AI חושב...',
+    ai_no_results: 'לא נוצרו הצעות. נסה תיאור אחר.',
+    ai_generated: 'שמות נוצרו',
+    trending_title: 'טרנדים עכשיו',
   }
 };
 
@@ -1085,6 +1242,97 @@ const params = new URLSearchParams(window.location.search);
 if (params.get('d')) {
   document.getElementById('searchInput').value = params.get('d');
   doSearch();
+} else {
+  // Load trending on homepage
+  loadTrending();
+}
+
+// ── AI Suggest ──
+document.getElementById('aiInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doAiSuggest();
+});
+
+async function doAiSuggest() {
+  const q = document.getElementById('aiInput').value.trim();
+  if (!q) return;
+  
+  const el = document.getElementById('aiResults');
+  el.innerHTML = `<div style="text-align:center;padding:1rem;color:var(--text2)"><div class="spinner" style="margin:0 auto .5rem"></div>${t('ai_thinking')}</div>`;
+  
+  try {
+    const resp = await fetch(`${API}/api/suggest?q=${encodeURIComponent(q)}`);
+    const data = await resp.json();
+    
+    if (data.error) {
+      el.innerHTML = `<p style="color:var(--red);padding:.5rem;">${data.error}</p>`;
+      return;
+    }
+    
+    if (!data.suggestions.length) {
+      el.innerHTML = `<p style="color:var(--text2);padding:.5rem;">${t('ai_no_results')}</p>`;
+      return;
+    }
+    
+    let html = `<div style="margin-top:.5rem;font-size:.85rem;color:var(--text2);">
+      ${data.total} ${t('ai_generated')} — ${data.available} ${t('scan_available')} on .com
+    </div>`;
+    html += `<div class="ai-results">`;
+    
+    data.suggestions.forEach(s => {
+      const availClass = s.available ? 'yes' : 'no';
+      const availText = s.available ? '✅ Available' : '❌ Taken';
+      const priceText = s.available && s.price ? ` · $${s.price.toFixed(2)}` : '';
+      
+      html += `<div class="ai-card">
+        <div>
+          <span class="ai-name">${s.name}</span><span class="ai-com">.com</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <span class="ai-avail ${availClass}">${availText}${priceText}</span>
+          <button class="ai-search-btn" onclick="searchDomain('${s.name}')">🔍</button>
+        </div>
+      </div>`;
+    });
+    
+    html += '</div>';
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = `<p style="color:var(--red);padding:.5rem;">Error: ${e.message}</p>`;
+  }
+}
+
+// ── Trending ──
+async function loadTrending() {
+  const el = document.getElementById('trendingGrid');
+  try {
+    const resp = await fetch(`${API}/api/trending`);
+    const data = await resp.json();
+    
+    if (!data.trends || data.trends.length === 0) {
+      el.innerHTML = `<p style="color:var(--text2)">No trending data available.</p>`;
+      return;
+    }
+    
+    let html = '';
+    data.trends.forEach(t => {
+      html += `<div class="trend-card" onclick="searchDomain('${t.name}')">
+        <div class="trend-name">${t.name}</div>
+        ${t.topic !== t.name ? `<div class="trend-topic">${t.topic}</div>` : ''}
+        <div class="trend-exts">`;
+      
+      t.extensions.forEach(e => {
+        const cls = e.available ? 'avail' : 'taken';
+        const price = e.available && e.price ? ` $${e.price.toFixed(0)}` : '';
+        html += `<span class="trend-ext ${cls}">.${e.tld}${price}</span>`;
+      });
+      
+      html += `</div></div>`;
+    });
+    
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = `<p style="color:var(--text2)">Could not load trends.</p>`;
+  }
 }
 </script>
 </body>

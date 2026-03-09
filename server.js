@@ -3,7 +3,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const NodeCache = require('node-cache');
 const path = require('path');
-const { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan } = require('./services');
+const { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan, aiSuggest, getTrending } = require('./services');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -138,6 +138,34 @@ app.get('/api/scan', async (req, res) => {
 
     const result = await multiTldScan(name);
     dnsCache.set(cacheKey, result, 600); // 10min cache
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── API: AI domain name suggestions ──
+app.get('/api/suggest', async (req, res) => {
+  try {
+    const { q, count } = req.query;
+    if (!q) return res.status(400).json({ error: 'q (description) parameter required' });
+    
+    const cacheKey = `suggest:${q}`;
+    const cached = dnsCache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const result = await aiSuggest(q, parseInt(count) || 12);
+    if (!result.error) dnsCache.set(cacheKey, result, 1800); // 30min cache
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── API: Trending domains ──
+app.get('/api/trending', async (req, res) => {
+  try {
+    const result = await getTrending();
     res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });
