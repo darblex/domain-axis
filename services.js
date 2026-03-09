@@ -144,7 +144,7 @@ async function lookupDNSRecords(domain) {
 async function lookupSSL(domain) {
   try {
     const resp = await fetch(`https://crt.sh/?q=${domain}&output=json`, {
-      signal: AbortSignal.timeout(15000)
+      signal: AbortSignal.timeout(25000)
     });
     if (!resp.ok) return { domain, certificates: [], error: 'crt.sh request failed' };
     

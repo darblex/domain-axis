@@ -8,6 +8,9 @@ const { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices } = requi
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy (Railway / Cloudflare)
+app.set('trust proxy', 1);
+
 // Cache: 6hr for prices, 5min for DNS/WHOIS
 const priceCache = new NodeCache({ stdTTL: 21600 });
 const dnsCache = new NodeCache({ stdTTL: 300 });
@@ -18,6 +21,7 @@ app.use(express.json());
 // Rate limiting
 app.use('/api/', rateLimit({
   windowMs: 60 * 1000,
+  validate: { xForwardedForHeader: false },
   max: 100,
   message: { error: 'Too many requests, try again in a minute' }
 }));
