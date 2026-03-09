@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain Axis — Free Domain Intelligence Platform</title>
+  <meta name="description" content="Find the cheapest domain prices across 50+ registrars. AI-powered domain search, WHOIS lookup, DNS records, and SSL certificate info — all free.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --bg2: #111827;
+      --bg3: #1e293b;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --accent: #3b82f6;
+      --accent2: #8b5cf6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --orange: #f97316;
+      --radius: 12px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .light {
+      --bg: #f8fafc;
+      --bg2: #ffffff;
+      --bg3: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text2: #64748b;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .3s, color .3s;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 3rem 1rem 1rem;
+    }
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tagline {
+      color: var(--text2);
+      font-size: 1rem;
+      margin-top: .3rem;
+    }
+    .controls {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: .5rem;
+    }
+    .controls button {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: .4rem .8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: all .2s;
+    }
+    .controls button:hover { border-color: var(--accent); }
+
+    /* ── Search ── */
+    .search-box {
+      max-width: 700px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+    .search-wrap {
+      display: flex;
+      background: var(--bg2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color .3s;
+    }
+    .search-wrap:focus-within { border-color: var(--accent); }
+    .search-wrap input {
+      flex: 1;
+      padding: 1rem 1.2rem;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.1rem;
+      outline: none;
+    }
+    .search-wrap input::placeholder { color: var(--text2); }
+    .search-wrap button {
+      padding: .8rem 1.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .search-wrap button:hover { opacity: .9; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: .3rem;
+      padding: 0 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: .6rem 1.2rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: .9rem;
+      transition: all .2s;
+    }
+    .tab:hover { border-color: var(--accent); color: var(--text); }
+    .tab.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    /* ── Content ── */
+    .content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1rem 3rem;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Availability Banner ── */
+    .avail-banner {
+      text-align: center;
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .avail-banner.available { background: rgba(16,185,129,.15); color: var(--green); }
+    .avail-banner.taken { background: rgba(239,68,68,.15); color: var(--red); }
+    .avail-banner.unknown { background: rgba(245,158,11,.15); color: var(--yellow); }
+
+    /* ── Price Table ── */
+    .price-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg2);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .price-table th {
+      background: var(--bg3);
+      padding: .8rem 1rem;
+      text-align: left;
+      font-size: .85rem;
+      color: var(--text2);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .price-table th:hover { color: var(--accent); }
+    .price-table td {
+      padding: .7rem 1rem;
+      border-top: 1px solid var(--border);
+      font-size: .95rem;
+    }
+    .price-table tr:hover td { background: rgba(59,130,246,.05); }
+    .price-table .best td { background: rgba(16,185,129,.08); }
+    .price-table .best td:first-child { position: relative; }
+    .price-table .best td:first-child::before {
+      content: '🏆';
+      position: absolute;
+      left: -2px;
+    }
+    .badge {
+      display: inline-block;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .badge-green { background: rgba(16,185,129,.15); color: var(--green); }
+    .badge-blue { background: rgba(59,130,246,.15); color: var(--accent); }
+    .badge-yellow { background: rgba(245,158,11,.15); color: var(--yellow); }
+    .buy-link {
+      padding: .3rem .8rem;
+      background: var(--accent);
+      color: white !important;
+      border-radius: 6px;
+      font-size: .85rem;
+      font-weight: 600;
+      display: inline-block;
+      transition: opacity .2s;
+    }
+    .buy-link:hover { opacity: .85; text-decoration: none; }
+
+    /* ── Info Cards ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .info-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
+    }
+    .info-card h3 {
+      font-size: .85rem;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: .8rem;
+    }
+    .info-card .value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      word-break: break-all;
+    }
+    .info-card .detail { color: var(--text2); font-size: .9rem; margin-top: .3rem; }
+
+    /* ── DNS Records Table ── */
+    .dns-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--bg2);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+    }
+    .dns-table th {
+      background: var(--bg3);
+      padding: .6rem 1rem;
+      text-align: left;
+      font-size: .8rem;
+      color: var(--text2);
+      font-weight: 600;
+    }
+    .dns-table td {
+      padding: .5rem 1rem;
+      border-top: 1px solid var(--border);
+      font-size: .9rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── Loading ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+      height: 1rem;
+      margin: .5rem 0;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    
+    .loading-overlay {
+      text-align: center;
+      padding: 3rem;
+      color: var(--text2);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Empty State ── */
+    .empty {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--text2);
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty h2 { font-size: 1.3rem; color: var(--text); margin-bottom: .5rem; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text2);
+      font-size: .85rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .logo { font-size: 1.8rem; }
+      .search-wrap input { font-size: 1rem; padding: .8rem; }
+      .search-wrap button { padding: .8rem 1rem; }
+      .price-table { font-size: .85rem; }
+      .price-table th, .price-table td { padding: .5rem .6rem; }
+      .info-grid { grid-template-columns: 1fr; }
+      .controls { position: static; justify-content: center; padding: .5rem; }
+      .header { padding: 1.5rem 1rem .5rem; }
+      .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="toggleTheme()" id="themeBtn">🌙</button>
+    <button onclick="toggleLang()" id="langBtn">עב</button>
+  </div>
+
+  <div class="header">
+    <div class="logo">🌐 DOMAIN AXIS</div>
+    <div class="tagline" data-i18n="tagline">Free Domain Intelligence Platform</div>
+  </div>
+
+  <div class="search-box">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search domain name... (e.g. coolstartup.com)" autofocus>
+      <button onclick="doSearch()" data-i18n="search">Search</button>
+    </div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div id="availBanner" class="avail-banner" style="max-width:1100px;margin:0 auto 1rem;display:none"></div>
+    
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('prices')" data-tab="prices">💰 <span data-i18n="tab_prices">Prices</span></div>
+      <div class="tab" onclick="switchTab('whois')" data-tab="whois">📋 WHOIS</div>
+      <div class="tab" onclick="switchTab('dns')" data-tab="dns">🔍 DNS</div>
+      <div class="tab" onclick="switchTab('ssl')" data-tab="ssl">🔒 SSL</div>
+    </div>
+
+    <div class="content">
+      <!-- Prices Panel -->
+      <div class="panel active" id="panel-prices">
+        <div id="priceContent"></div>
+      </div>
+
+      <!-- WHOIS Panel -->
+      <div class="panel" id="panel-whois">
+        <div id="whoisContent"></div>
+      </div>
+
+      <!-- DNS Panel -->
+      <div class="panel" id="panel-dns">
+        <div id="dnsContent"></div>
+      </div>
+
+      <!-- SSL Panel -->
+      <div class="panel" id="panel-ssl">
+        <div id="sslContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty">
+    <div class="icon">🔍</div>
+    <h2 data-i18n="empty_title">Find Your Perfect Domain</h2>
+    <p data-i18n="empty_desc">Compare prices across 50+ registrars, check availability, WHOIS, DNS & SSL — all free.</p>
+  </div>
+
+  <div class="footer">
+    <p>Domain Axis — Free & Open Source Domain Intelligence</p>
+    <p style="margin-top:.3rem">Prices sourced from tld-list.com & Cloudflare. Not affiliated with any registrar.</p>
+  </div>
+
+<script>
+const API = window.location.origin;
+let currentDomain = '';
+let lang = 'en';
+let priceData = null;
+
+const i18n = {
+  en: {
+    tagline: 'Free Domain Intelligence Platform',
+    search: 'Search',
+    tab_prices: 'Prices',
+    empty_title: 'Find Your Perfect Domain',
+    empty_desc: 'Compare prices across 50+ registrars, check availability, WHOIS, DNS & SSL — all free.',
+    available: '✅ {domain} is available!',
+    taken: '❌ {domain} is taken',
+    unknown: '❓ Could not determine availability for {domain}',
+    loading: 'Loading...',
+    registrar: 'Registrar',
+    register: 'Register',
+    renewal: 'Renewal',
+    transfer: 'Transfer',
+    whois_priv: 'WHOIS Privacy',
+    score_3y: '3yr Cost',
+    buy: 'Buy',
+    free: 'Free',
+    best_deal: 'Best Deal',
+    no_prices: 'No prices found for this TLD. Try a different extension.',
+  },
+  he: {
+    tagline: 'פלטפורמת חיפוש דומיינים חינמית',
+    search: 'חפש',
+    tab_prices: 'מחירים',
+    empty_title: 'מצא את הדומיין המושלם',
+    empty_desc: 'השווה מחירים מ-50+ רגיסטרארים, בדוק זמינות, WHOIS, DNS ו-SSL — הכל חינם.',
+    available: '✅ {domain} פנוי!',
+    taken: '❌ {domain} תפוס',
+    unknown: '❓ לא ניתן לקבוע זמינות עבור {domain}',
+    loading: 'טוען...',
+    registrar: 'רגיסטרר',
+    register: 'רישום',
+    renewal: 'חידוש',
+    transfer: 'העברה',
+    whois_priv: 'פרטיות WHOIS',
+    score_3y: 'עלות 3 שנים',
+    buy: 'קנה',
+    free: 'חינם',
+    best_deal: 'הכי משתלם',
+    no_prices: 'לא נמצאו מחירים עבור סיומת זו. נסה סיומת אחרת.',
+  }
+};
+
+function t(key) {
+  return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
+}
+
+function updateI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[lang][key]) el.textContent = i18n[lang][key];
+  });
+  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
+}
+
+function toggleLang() {
+  lang = lang === 'en' ? 'he' : 'en';
+  document.getElementById('langBtn').textContent = lang === 'en' ? 'עב' : 'EN';
+  updateI18n();
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const isLight = document.body.classList.contains('light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+// Init theme
+if (localStorage.getItem('theme') === 'light') {
+  document.body.classList.add('light');
+  document.getElementById('themeBtn').textContent = '☀️';
+}
+
+// ── Search ──
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+async function doSearch() {
+  let domain = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!domain) return;
+  
+  // Add .com if no TLD
+  if (!domain.includes('.')) domain += '.com';
+  
+  currentDomain = domain;
+  
+  // Update URL
+  const url = new URL(window.location);
+  url.searchParams.set('d', domain);
+  history.pushState({}, '', url);
+  
+  // Show results, hide empty
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('emptyState').style.display = 'none';
+  
+  // Reset to prices tab
+  switchTab('prices');
+  
+  // Show loading in all panels
+  showLoading('priceContent');
+  showLoading('whoisContent');
+  showLoading('dnsContent');
+  showLoading('sslContent');
+  
+  // Check availability
+  checkAvailability(domain);
+  
+  // Fetch prices
+  fetchPrices(domain);
+  
+  // Lazy-load other tabs on first click (or preload)
+  fetchWhois(domain);
+  fetchDNS(domain);
+  fetchSSL(domain);
+}
+
+function showLoading(id) {
+  document.getElementById(id).innerHTML = `
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p>${t('loading')}</p>
+    </div>`;
+}
+
+async function checkAvailability(domain) {
+  const banner = document.getElementById('availBanner');
+  try {
+    const resp = await fetch(`${API}/api/check?domain=${domain}`);
+    const data = await resp.json();
+    
+    if (data.available === true) {
+      banner.className = 'avail-banner available';
+      banner.textContent = t('available').replace('{domain}', domain);
+    } else if (data.available === false) {
+      banner.className = 'avail-banner taken';
+      banner.textContent = t('taken').replace('{domain}', domain);
+    } else {
+      banner.className = 'avail-banner unknown';
+      banner.textContent = t('unknown').replace('{domain}', domain);
+    }
+    banner.style.display = 'block';
+  } catch {
+    banner.style.display = 'none';
+  }
+}
+
+async function fetchPrices(domain) {
+  try {
+    const resp = await fetch(`${API}/api/prices?domain=${domain}`);
+    const data = await resp.json();
+    priceData = data;
+    renderPrices(data);
+  } catch (e) {
+    document.getElementById('priceContent').innerHTML = `<p style="color:var(--red);text-align:center;padding:2rem;">Error fetching prices: ${e.message}</p>`;
+  }
+}
+
+function renderPrices(data) {
+  const el = document.getElementById('priceContent');
+  if (!data.registrars || data.registrars.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="icon">💸</div><p>${t('no_prices')}</p></div>`;
+    return;
+  }
+  
+  let html = `<div style="margin-bottom:1rem;color:var(--text2);font-size:.9rem;">${data.total} registrars found for .${data.tld}</div>`;
+  html += `<div style="overflow-x:auto;"><table class="price-table">
+    <thead><tr>
+      <th>#</th>
+      <th>${t('registrar')}</th>
+      <th onclick="sortPrices('regPrice')">${t('register')} ↕</th>
+      <th onclick="sortPrices('renewalPrice')">${t('renewal')} ↕</th>
+      <th class="hide-mobile" onclick="sortPrices('transferPrice')">${t('transfer')} ↕</th>
+      <th class="hide-mobile">${t('whois_priv')}</th>
+      <th class="hide-mobile" onclick="sortPrices('score3y')">${t('score_3y')} ↕</th>
+      <th></th>
+    </tr></thead><tbody>`;
+  
+  data.registrars.forEach((r, i) => {
+    const isBest = i === 0;
+    const promo = r.promoCode ? ` <span class="badge badge-yellow">${r.promoCode}</span>` : '';
+    const whois = r.whoisPrivacyFree ? `<span class="badge badge-green">${t('free')}</span>` : '—';
+    const bestBadge = isBest ? ` <span class="badge badge-blue">${t('best_deal')}</span>` : '';
+    
+    html += `<tr class="${isBest ? 'best' : ''}">
+      <td>${i + 1}</td>
+      <td><strong>${r.registrar}</strong>${bestBadge}${promo}</td>
+      <td><strong>$${r.regPrice.toFixed(2)}</strong></td>
+      <td>${r.renewalPrice ? '$' + r.renewalPrice.toFixed(2) : '—'}</td>
+      <td class="hide-mobile">${r.transferPrice ? '$' + r.transferPrice.toFixed(2) : '—'}</td>
+      <td class="hide-mobile">${whois}</td>
+      <td class="hide-mobile">${r.score3y ? '$' + r.score3y.toFixed(2) : '—'}</td>
+      <td><a href="${r.purchaseUrl}" target="_blank" class="buy-link">${t('buy')}</a></td>
+    </tr>`;
+  });
+  
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function sortPrices(field) {
+  if (!priceData) return;
+  priceData.registrars.sort((a, b) => (a[field] || 9999) - (b[field] || 9999));
+  renderPrices(priceData);
+}
+
+async function fetchWhois(domain) {
+  try {
+    const resp = await fetch(`${API}/api/whois?domain=${domain}`);
+    const data = await resp.json();
+    renderWhois(data);
+  } catch (e) {
+    document.getElementById('whoisContent').innerHTML = `<p style="color:var(--red);padding:2rem;">Error: ${e.message}</p>`;
+  }
+}
+
+function renderWhois(data) {
+  const el = document.getElementById('whoisContent');
+  if (data.error) {
+    el.innerHTML = `<div class="empty"><div class="icon">📋</div><p>${data.error}</p></div>`;
+    return;
+  }
+  
+  const fmt = d => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+  
+  let html = `<div class="info-grid">
+    <div class="info-card"><h3>Registrar</h3><div class="value">${data.registrar || 'N/A'}</div></div>
+    <div class="info-card"><h3>Registered</h3><div class="value">${fmt(data.registration)}</div>
+      ${data.registration ? `<div class="detail">${daysSince(data.registration)} days ago</div>` : ''}</div>
+    <div class="info-card"><h3>Expires</h3><div class="value">${fmt(data.expiration)}</div>
+      ${data.expiration ? `<div class="detail">${daysUntil(data.expiration)} days left</div>` : ''}</div>
+    <div class="info-card"><h3>Last Updated</h3><div class="value">${fmt(data.lastChanged)}</div></div>
+    <div class="info-card"><h3>DNSSEC</h3><div class="value">${data.dnssec ? '✅ Signed' : '❌ Not signed'}</div></div>
+    <div class="info-card"><h3>Status</h3><div class="value" style="font-size:.85rem;">${(data.status || []).join(', ') || 'N/A'}</div></div>
+  </div>`;
+  
+  if (data.nameservers && data.nameservers.length) {
+    html += `<div class="info-card"><h3>Nameservers</h3>`;
+    data.nameservers.forEach(ns => { html += `<div class="value" style="margin-bottom:.3rem;">${ns}</div>`; });
+    html += `</div>`;
+  }
+  
+  el.innerHTML = html;
+}
+
+async function fetchDNS(domain) {
+  try {
+    const resp = await fetch(`${API}/api/dns?domain=${domain}`);
+    const data = await resp.json();
+    renderDNS(data);
+  } catch (e) {
+    document.getElementById('dnsContent').innerHTML = `<p style="color:var(--red);padding:2rem;">Error: ${e.message}</p>`;
+  }
+}
+
+function renderDNS(data) {
+  const el = document.getElementById('dnsContent');
+  if (!data.records) { el.innerHTML = '<p>No DNS records found.</p>'; return; }
+  
+  let html = '';
+  const types = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA'];
+  
+  types.forEach(type => {
+    const records = data.records[type];
+    if (!records || records.length === 0) return;
+    
+    html += `<h3 style="margin:1rem 0 .5rem; color:var(--accent);">${type} Records</h3>`;
+    html += `<table class="dns-table"><thead><tr><th>Name</th><th>TTL</th><th>Data</th></tr></thead><tbody>`;
+    records.forEach(r => {
+      html += `<tr><td>${r.name}</td><td>${r.ttl}s</td><td>${escapeHtml(r.data)}</td></tr>`;
+    });
+    html += '</tbody></table>';
+  });
+  
+  if (!html) html = '<div class="empty"><div class="icon">🔍</div><p>No DNS records found for this domain.</p></div>';
+  el.innerHTML = html;
+}
+
+async function fetchSSL(domain) {
+  try {
+    const resp = await fetch(`${API}/api/ssl?domain=${domain}`);
+    const data = await resp.json();
+    renderSSL(data);
+  } catch (e) {
+    document.getElementById('sslContent').innerHTML = `<p style="color:var(--red);padding:2rem;">Error: ${e.message}</p>`;
+  }
+}
+
+function renderSSL(data) {
+  const el = document.getElementById('sslContent');
+  if (!data.certificates || data.certificates.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">🔒</div><p>No SSL certificates found for this domain.</p></div>';
+    return;
+  }
+  
+  let html = `<p style="margin-bottom:1rem;color:var(--text2);">${data.total} certificates found (showing latest 10)</p>`;
+  html += `<div class="info-grid">`;
+  
+  data.certificates.forEach(c => {
+    const fmt = d => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A';
+    const isExpired = c.notAfter && new Date(c.notAfter) < new Date();
+    
+    html += `<div class="info-card">
+      <h3>${c.commonName || 'Certificate'}</h3>
+      <div class="value" style="font-size:.9rem;">${c.issuer || 'Unknown'}</div>
+      <div class="detail">Valid: ${fmt(c.notBefore)} → ${fmt(c.notAfter)} ${isExpired ? '<span style="color:var(--red)">EXPIRED</span>' : '<span style="color:var(--green)">Active</span>'}</div>
+      ${c.matchingIdentities.length ? `<div class="detail" style="margin-top:.3rem;">Covers: ${c.matchingIdentities.slice(0, 3).join(', ')}${c.matchingIdentities.length > 3 ? '...' : ''}</div>` : ''}
+    </div>`;
+  });
+  
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ── Tabs ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+}
+
+// ── Helpers ──
+function daysSince(date) { return Math.floor((Date.now() - new Date(date)) / 86400000); }
+function daysUntil(date) { return Math.floor((new Date(date) - Date.now()) / 86400000); }
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── URL params ──
+const params = new URLSearchParams(window.location.search);
+if (params.get('d')) {
+  document.getElementById('searchInput').value = params.get('d');
+  doSearch();
+}
+</script>
+</body>
+</html>
