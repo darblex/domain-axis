@@ -314,6 +314,83 @@
     .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
     .empty h2 { font-size: 1.3rem; color: var(--text); margin-bottom: .5rem; }
 
+    /* ── Scan Results Grid ── */
+    .scan-stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .scan-stat {
+      padding: .6rem 1.2rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: .95rem;
+    }
+    .scan-stat strong { margin-right: .3rem; }
+    .scan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: .6rem;
+    }
+    .scan-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .7rem 1rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all .2s;
+    }
+    .scan-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .scan-card.avail { border-left: 3px solid var(--green); }
+    .scan-card.taken { border-left: 3px solid var(--red); opacity: .6; }
+    .scan-card .sc-domain { font-weight: 600; font-size: 1.05rem; }
+    .scan-card .sc-name { color: var(--text); }
+    .scan-card .sc-tld { color: var(--accent); }
+    .scan-card .sc-status { font-size: .8rem; font-weight: 600; }
+    .scan-card .sc-status.avail { color: var(--green); }
+    .scan-card .sc-status.taken { color: var(--red); }
+    .scan-card .sc-right { display: flex; align-items: center; gap: .6rem; }
+    .scan-card .sc-price { color: var(--green); font-weight: 600; font-size: .9rem; }
+    .scan-card .sc-btn {
+      padding: .3rem .7rem;
+      border: none;
+      border-radius: 6px;
+      font-size: .8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity .2s;
+    }
+    .scan-card .sc-btn:hover { opacity: .85; }
+    .scan-card .sc-btn.compare { background: var(--accent); color: white; }
+    .scan-card .sc-cat {
+      font-size: .7rem;
+      padding: .1rem .4rem;
+      border-radius: 4px;
+      background: rgba(139,92,246,.12);
+      color: var(--accent2);
+    }
+    .scan-filters {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .scan-filter {
+      padding: .4rem .8rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .85rem;
+      color: var(--text2);
+      transition: all .2s;
+    }
+    .scan-filter:hover, .scan-filter.active { border-color: var(--accent); color: var(--accent); }
+
     /* ── Alternatives ── */
     .alt-section {
       margin-top: 1.5rem;
@@ -409,7 +486,7 @@
 
   <div class="search-box">
     <div class="search-wrap">
-      <input type="text" id="searchInput" placeholder="Search domain name... (e.g. coolstartup.com)" autofocus>
+      <input type="text" id="searchInput" placeholder="Search any name or domain... (e.g. coolstartup or coolstartup.com)" autofocus>
       <button onclick="doSearch()" data-i18n="search">Search</button>
     </div>
   </div>
@@ -494,6 +571,15 @@ const i18n = {
     alt_var_label: '✨ Creative variations:',
     alt_creative: 'creative',
     alt_check: 'Check',
+    scan_checked: 'extensions checked',
+    scan_available: 'available',
+    scan_taken: 'taken',
+    scan_all: 'All',
+    scan_avail_only: 'Available only',
+    scan_free: 'Available',
+    scan_taken_short: 'Taken',
+    scan_yr: 'yr',
+    scan_compare: 'Compare Prices',
   },
   he: {
     tagline: 'פלטפורמת חיפוש דומיינים חינמית',
@@ -523,6 +609,15 @@ const i18n = {
     alt_var_label: '✨ וריאציות יצירתיות:',
     alt_creative: 'יצירתי',
     alt_check: 'בדוק',
+    scan_checked: 'סיומות נבדקו',
+    scan_available: 'פנויים',
+    scan_taken: 'תפוסים',
+    scan_all: 'הכל',
+    scan_avail_only: 'פנויים בלבד',
+    scan_free: 'פנוי',
+    scan_taken_short: 'תפוס',
+    scan_yr: 'שנה',
+    scan_compare: 'השווה מחירים',
   }
 };
 
@@ -564,42 +659,142 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
 });
 
 async function doSearch() {
-  let domain = document.getElementById('searchInput').value.trim().toLowerCase();
-  if (!domain) return;
+  let input = document.getElementById('searchInput').value.trim().toLowerCase();
+  if (!input) return;
   
-  // Add .com if no TLD
-  if (!domain.includes('.')) domain += '.com';
+  // Clean up
+  input = input.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
   
+  // If no dot → multi-TLD scan mode
+  const hasDot = input.includes('.');
+  
+  if (!hasDot) {
+    // SCAN MODE: check name across 30 TLDs
+    currentDomain = input;
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('availBanner').style.display = 'none';
+    document.getElementById('alternativesSection').style.display = 'none';
+    
+    // Hide tabs, show scan panel
+    document.querySelector('.tabs').style.display = 'none';
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-prices').classList.add('active');
+    showLoading('priceContent');
+    
+    const url = new URL(window.location);
+    url.searchParams.set('d', input);
+    history.pushState({}, '', url);
+    
+    try {
+      const resp = await fetch(`${API}/api/scan?name=${input}`);
+      const data = await resp.json();
+      renderScan(data);
+    } catch (e) {
+      document.getElementById('priceContent').innerHTML = `<p style="color:var(--red);text-align:center;padding:2rem;">Error: ${e.message}</p>`;
+    }
+    return;
+  }
+
+  // SPECIFIC DOMAIN MODE
+  const domain = input;
   currentDomain = domain;
   
-  // Update URL
   const url = new URL(window.location);
   url.searchParams.set('d', domain);
   history.pushState({}, '', url);
   
-  // Show results, hide empty
   document.getElementById('results').style.display = 'block';
   document.getElementById('emptyState').style.display = 'none';
+  document.querySelector('.tabs').style.display = 'flex';
   
-  // Reset to prices tab
   switchTab('prices');
-  
-  // Show loading in all panels
   showLoading('priceContent');
   showLoading('whoisContent');
   showLoading('dnsContent');
   showLoading('sslContent');
   
-  // Check availability
   checkAvailability(domain);
-  
-  // Fetch prices
   fetchPrices(domain);
-  
-  // Lazy-load other tabs on first click (or preload)
   fetchWhois(domain);
   fetchDNS(domain);
   fetchSSL(domain);
+}
+
+let scanData = null;
+let scanFilter = 'all';
+
+function renderScan(data) {
+  scanData = data;
+  const el = document.getElementById('priceContent');
+  
+  if (!data.results || data.results.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>No results found.</p></div>`;
+    return;
+  }
+  
+  let html = '';
+  
+  // Stats bar
+  html += `<div class="scan-stats">
+    <div class="scan-stat"><strong style="color:var(--accent);">🔍 ${data.total}</strong> ${t('scan_checked')}</div>
+    <div class="scan-stat"><strong style="color:var(--green);">✅ ${data.available}</strong> ${t('scan_available')}</div>
+    <div class="scan-stat"><strong style="color:var(--red);">❌ ${data.taken}</strong> ${t('scan_taken')}</div>
+  </div>`;
+  
+  // Filters
+  const cats = [...new Set(data.results.map(r => r.category))];
+  html += `<div class="scan-filters">
+    <div class="scan-filter ${scanFilter === 'all' ? 'active' : ''}" onclick="filterScan('all')">${t('scan_all')}</div>
+    <div class="scan-filter ${scanFilter === 'available' ? 'active' : ''}" onclick="filterScan('available')">✅ ${t('scan_avail_only')}</div>`;
+  cats.forEach(c => {
+    html += `<div class="scan-filter ${scanFilter === c ? 'active' : ''}" onclick="filterScan('${c}')">${catLabel(c)}</div>`;
+  });
+  html += `</div>`;
+  
+  // Filter results
+  let filtered = data.results;
+  if (scanFilter === 'available') filtered = filtered.filter(r => r.available);
+  else if (scanFilter !== 'all') filtered = filtered.filter(r => r.category === scanFilter);
+  
+  // Grid
+  html += `<div class="scan-grid">`;
+  filtered.forEach(r => {
+    const status = r.available ? 'avail' : 'taken';
+    const statusText = r.available ? '✅ ' + t('scan_free') : '❌ ' + t('scan_taken_short');
+    const price = r.price ? `$${r.price.toFixed(2)}` : '';
+    const renewal = r.renewalPrice ? `/${t('scan_yr')} $${r.renewalPrice.toFixed(2)}` : '';
+    
+    html += `<div class="scan-card ${status}">
+      <div>
+        <div class="sc-domain"><span class="sc-name">${data.name}</span><span class="sc-tld">.${r.tld}</span></div>
+        <span class="sc-cat">${catLabel(r.category)}</span>
+      </div>
+      <div class="sc-right">
+        <span class="sc-status ${status}">${statusText}</span>
+        ${r.available && price ? `<span class="sc-price">${price}</span>` : ''}
+        ${r.available ? `<button class="sc-btn compare" onclick="searchDomain('${r.domain}')">${t('scan_compare')}</button>` : ''}
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  
+  el.innerHTML = html;
+}
+
+function filterScan(f) {
+  scanFilter = f;
+  if (scanData) renderScan(scanData);
+}
+
+function catLabel(cat) {
+  const labels = {
+    popular: '🌟 Popular', tech: '💻 Tech', personal: '👤 Personal', 
+    classic: '📚 Classic', new: '🆕 New', business: '💼 Business',
+    country: '🌍 Country', short: '✂️ Short', media: '📺 Media',
+    creative: '🎨 Creative'
+  };
+  return labels[cat] || cat;
 }
 
 function showLoading(id) {

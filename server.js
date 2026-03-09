@@ -3,7 +3,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const NodeCache = require('node-cache');
 const path = require('path');
-const { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices } = require('./services');
+const { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan } = require('./services');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -120,6 +120,24 @@ app.get('/api/prices', async (req, res) => {
 
     const result = await fetchPrices(searchDomain, searchTld || searchDomain.split('.').slice(1).join('.'));
     priceCache.set(cacheKey, result);
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── API: Multi-TLD scan (search across many extensions) ──
+app.get('/api/scan', async (req, res) => {
+  try {
+    const { name } = req.query;
+    if (!name) return res.status(400).json({ error: 'name parameter required' });
+    
+    const cacheKey = `scan:${name}`;
+    const cached = dnsCache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const result = await multiTldScan(name);
+    dnsCache.set(cacheKey, result, 600); // 10min cache
     res.json(result);
   } catch (e) {
     res.status(500).json({ error: e.message });

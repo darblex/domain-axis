@@ -359,6 +359,92 @@ async function fetchPrices(domain, tld) {
 }
 
 // ═══════════════════════════════════════
+// Multi-TLD Scan — check name across many extensions
+// ═══════════════════════════════════════
+async function multiTldScan(name) {
+  // Top TLDs to scan, grouped by category
+  const tlds = [
+    // Popular
+    { tld: 'com', cat: 'popular' },
+    { tld: 'net', cat: 'popular' },
+    { tld: 'org', cat: 'popular' },
+    { tld: 'co', cat: 'popular' },
+    { tld: 'io', cat: 'tech' },
+    { tld: 'dev', cat: 'tech' },
+    { tld: 'app', cat: 'tech' },
+    { tld: 'ai', cat: 'tech' },
+    { tld: 'tech', cat: 'tech' },
+    { tld: 'me', cat: 'personal' },
+    { tld: 'xyz', cat: 'new' },
+    { tld: 'info', cat: 'classic' },
+    { tld: 'biz', cat: 'business' },
+    { tld: 'cc', cat: 'short' },
+    { tld: 'us', cat: 'country' },
+    { tld: 'uk', cat: 'country' },
+    { tld: 'de', cat: 'country' },
+    { tld: 'eu', cat: 'country' },
+    { tld: 'online', cat: 'new' },
+    { tld: 'site', cat: 'new' },
+    { tld: 'store', cat: 'business' },
+    { tld: 'pro', cat: 'business' },
+    { tld: 'live', cat: 'new' },
+    { tld: 'world', cat: 'new' },
+    { tld: 'tv', cat: 'media' },
+    { tld: 'cloud', cat: 'tech' },
+    { tld: 'digital', cat: 'tech' },
+    { tld: 'studio', cat: 'creative' },
+    { tld: 'design', cat: 'creative' },
+    { tld: 'page', cat: 'new' },
+  ];
+
+  // Check all in parallel batches
+  const batchSize = 15;
+  const results = [];
+
+  for (let i = 0; i < tlds.length; i += batchSize) {
+    const batch = tlds.slice(i, i + batchSize);
+    const checks = await Promise.allSettled(
+      batch.map(async ({ tld, cat }) => {
+        const domain = `${name}.${tld}`;
+        const check = await checkDNS(domain);
+        const cfPrice = CLOUDFLARE_PRICES[tld];
+        return {
+          domain,
+          tld,
+          category: cat,
+          available: check.available,
+          ips: check.ips || [],
+          price: cfPrice?.reg || null,
+          renewalPrice: cfPrice?.renewal || null,
+        };
+      })
+    );
+
+    for (const r of checks) {
+      if (r.status === 'fulfilled') results.push(r.value);
+    }
+  }
+
+  // Sort: available first, then by price
+  results.sort((a, b) => {
+    if (a.available !== b.available) return a.available ? -1 : 1;
+    return (a.price || 999) - (b.price || 999);
+  });
+
+  const available = results.filter(r => r.available === true);
+  const taken = results.filter(r => r.available === false);
+
+  return {
+    name,
+    results,
+    available: available.length,
+    taken: taken.length,
+    total: results.length,
+    checkedAt: new Date().toISOString()
+  };
+}
+
+// ═══════════════════════════════════════
 // Smart Alternatives Generator
 // ═══════════════════════════════════════
 async function generateAlternatives(domain) {
@@ -451,4 +537,4 @@ function generateNameVariations(name) {
   return [...variations].slice(0, 15);
 }
 
-module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives };
+module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan };
