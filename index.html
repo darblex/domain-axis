@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMAIN AXIS — Ultimate Domain Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-0: #09090b; --bg-1: #0f0f12; --bg-2: #16161a; --bg-3: #1c1c22;
+      --bg-4: #24242c; --bg-hover: #1e1e26;
+      --border: #27272a; --border-light: #3f3f46;
+      --text: #fafafa; --text-2: #a1a1aa; --text-3: #71717a; --text-4: #52525b;
+      --accent: #3b82f6; --accent-hover: #2563eb; --accent-soft: rgba(59,130,246,0.12);
+      --green: #22c55e; --green-soft: rgba(34,197,94,0.12); --green-border: rgba(34,197,94,0.3);
+      --red: #ef4444; --red-soft: rgba(239,68,68,0.1); --red-border: rgba(239,68,68,0.3);
+      --gold: #eab308; --gold-soft: rgba(234,179,8,0.12);
+      --purple: #a855f7; --purple-soft: rgba(168,85,247,0.12);
+      --cyan: #06b6d4; --cyan-soft: rgba(6,182,212,0.12);
+      --radius: 12px; --radius-sm: 8px; --radius-xs: 6px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-0); color: var(--text); font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    ::selection { background: var(--accent); color: white; }
+
+    /* Layout */
+    .app { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 0;
+      border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+    .nav-brand { display: flex; align-items: center; gap: 12px; }
+    .nav-logo { font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
+    .nav-badge { font-size: 0.6rem; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .nav-btn { background: var(--bg-2); border: 1px solid var(--border); color: var(--text-2);
+      padding: 7px 14px; border-radius: var(--radius-xs); font-size: 0.8rem; cursor: pointer;
+      transition: all 0.15s; font-family: inherit; }
+    .nav-btn:hover { background: var(--bg-3); color: var(--text); border-color: var(--border-light); }
+    .nav-btn.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+    /* Hero */
+    .hero { text-align: center; padding: 40px 0 48px; }
+    .hero h1 { font-family: 'Outfit', sans-serif; font-size: 3.2rem; font-weight: 900;
+      letter-spacing: -2px; line-height: 1.1; margin-bottom: 12px; }
+    .hero h1 span { background: linear-gradient(135deg, var(--accent), #818cf8, var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--text-3); font-size: 1.05rem; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+    /* Search */
+    .search-wrap { max-width: 820px; margin: 0 auto 16px; }
+    .search-bar { display: flex; align-items: stretch; background: var(--bg-1); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; transition: all 0.2s; }
+    .search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* Country picker */
+    .country-pick { display: flex; align-items: center; gap: 6px; padding: 0 14px;
+      border-right: 1px solid var(--border); cursor: pointer; position: relative;
+      background: var(--bg-2); min-width: 130px; transition: background 0.15s; user-select: none; }
+    .country-pick:hover { background: var(--bg-3); }
+    .country-flag { font-size: 1.2rem; }
+    .country-name { font-size: 0.82rem; color: var(--text-2); font-weight: 500; white-space: nowrap; }
+    .country-arrow { color: var(--text-4); font-size: 0.7rem; margin-left: auto; }
+    .country-drop { position: absolute; top: 100%; left: 0; right: 0; min-width: 220px;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      max-height: 340px; overflow-y: auto; z-index: 100; display: none;
+      box-shadow: var(--shadow-lg); margin-top: 4px; }
+    .country-drop.show { display: block; }
+    .country-opt { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      cursor: pointer; transition: background 0.1s; font-size: 0.85rem; }
+    .country-opt:hover { background: var(--bg-3); }
+    .country-opt.active { background: var(--accent-soft); color: var(--accent); }
+    .country-opt .cflag { font-size: 1.1rem; }
+    .country-opt .cname { flex: 1; }
+    .country-opt .ctlds { font-size: 0.7rem; color: var(--text-4); font-family: 'JetBrains Mono', monospace; }
+
+    .search-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text);
+      font-size: 1.15rem; font-family: 'JetBrains Mono', monospace; padding: 16px 20px;
+      letter-spacing: -0.3px; }
+    .search-input::placeholder { color: var(--text-4); }
+    .search-btn { background: var(--accent); color: white; border: none; padding: 0 32px;
+      font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+      font-family: inherit; letter-spacing: 0.3px; }
+    .search-btn:hover { background: var(--accent-hover); }
+    .search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Quick tags */
+    .quick-tags { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+      max-width: 820px; margin: 0 auto 12px; }
+    .qtag { font-size: 0.75rem; padding: 5px 12px; border-radius: 99px; cursor: pointer;
+      background: var(--bg-2); border: 1px solid var(--border); color: var(--text-3);
+      transition: all 0.15s; font-weight: 500; }
+    .qtag:hover { border-color: var(--border-light); color: var(--text-2); }
+    .qtag.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+    .search-hint { text-align: center; color: var(--text-4); font-size: 0.78rem; margin-top: 8px; }
+    .search-hint kbd { background: var(--bg-3); border: 1px solid var(--border); padding: 1px 6px;
+      border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+
+    /* Stats */
+    .stats { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card { display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+      background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm); flex: 1; min-width: 140px; }
+    .stat-icon { font-size: 1.2rem; }
+    .stat-val { font-size: 1.5rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .stat-label { font-size: 0.68rem; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .stat-card.s-green .stat-val { color: var(--green); }
+    .stat-card.s-red .stat-val { color: var(--red); }
+    .stat-card.s-gold .stat-val { color: var(--gold); }
+    .stat-card.s-blue .stat-val { color: var(--accent); }
+
+    /* Progress */
+    .progress { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 16px 20px; margin-bottom: 20px; }
+    .progress-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .progress-label { font-size: 0.82rem; color: var(--text-3); }
+    .progress-label b { color: var(--text); font-family: 'JetBrains Mono', monospace; }
+    .progress-track { height: 4px; background: var(--bg-3); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--purple));
+      border-radius: 2px; transition: width 0.2s; width: 0%; }
+
+    /* Toolbar */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+      flex-wrap: wrap; gap: 12px; }
+    .toolbar-left { display: flex; gap: 6px; flex-wrap: wrap; }
+    .toolbar-right { display: flex; gap: 8px; }
+    .filter-pill { font-size: 0.78rem; padding: 6px 14px; border-radius: 99px; cursor: pointer;
+      background: var(--bg-2); border: 1px solid var(--border); color: var(--text-3);
+      transition: all 0.15s; font-weight: 500; font-family: inherit; }
+    .filter-pill:hover { border-color: var(--border-light); color: var(--text-2); }
+    .filter-pill.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+    .tool-btn { font-size: 0.78rem; padding: 6px 14px; border-radius: var(--radius-xs);
+      background: var(--bg-2); border: 1px solid var(--border); color: var(--text-3);
+      cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .tool-btn:hover { border-color: var(--border-light); color: var(--text-2); }
+
+    /* Results grid */
+    .results-grid { display: grid; gap: 10px; }
+
+    /* Domain card */
+    .d-card { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 20px; transition: all 0.2s; position: relative; overflow: hidden;
+      animation: cardIn 0.35s ease backwards; }
+    .d-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+    .d-card.avail::before { background: var(--green); }
+    .d-card.taken::before { background: var(--red); opacity: 0.5; }
+    .d-card.loading::before { background: var(--text-4); }
+    .d-card.pinned { border-color: var(--gold) !important; }
+    .d-card.pinned::after { content: '📌'; position: absolute; top: 8px; right: 12px; font-size: 0.9rem; }
+    .d-card:hover { border-color: var(--border-light); background: var(--bg-hover); }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .d-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .d-name { font-family: 'JetBrains Mono', monospace; font-size: 1.05rem; font-weight: 600; }
+    .d-name .ext { color: var(--accent); }
+    .d-meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .d-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+    .d-tag.cat { background: var(--bg-3); color: var(--text-3); }
+    .d-tag.method { background: var(--bg-3); color: var(--text-4); }
+    .d-tag.cheap { background: var(--green-soft); color: var(--green); }
+    .d-tag.seo { background: var(--accent-soft); color: var(--accent); }
+    .d-tag.premium { background: var(--purple-soft); color: var(--purple); }
+    .d-tag.hot { background: rgba(239,68,68,0.1); color: #f87171; }
+    .d-tag.local { background: var(--cyan-soft); color: var(--cyan); }
+    .d-tag.pinned-tag { background: var(--gold-soft); color: var(--gold); }
+
+    .d-badge { font-size: 0.78rem; font-weight: 600; padding: 4px 12px; border-radius: 99px; white-space: nowrap; }
+    .d-badge.avail { background: var(--green-soft); color: var(--green); border: 1px solid var(--green-border); }
+    .d-badge.taken { background: var(--red-soft); color: var(--red); border: 1px solid var(--red-border); }
+    .d-badge.err { background: var(--bg-3); color: var(--text-4); border: 1px solid var(--border); }
+    .d-badge.load { background: var(--bg-3); color: var(--text-4); border: 1px solid var(--border); }
+
+    /* Pricing */
+    .d-pricing { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .d-prices { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .d-price { display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 8px 14px; background: var(--bg-2); border: 1px solid var(--border);
+      border-radius: var(--radius-xs); font-size: 0.78rem; min-width: 90px; transition: all 0.15s; }
+    .d-price:hover { border-color: var(--border-light); }
+    .d-price.best { border-color: var(--green); background: var(--green-soft); }
+    .d-price .p-name { color: var(--text-3); font-size: 0.7rem; font-weight: 500; }
+    .d-price .p-val { font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text); }
+    .d-price.best .p-val { color: var(--green); }
+    .d-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .d-buy { font-size: 0.78rem; padding: 6px 14px; border-radius: var(--radius-xs);
+      background: var(--green); color: #000; font-weight: 600; text-decoration: none;
+      transition: all 0.15s; border: none; cursor: pointer; font-family: inherit; }
+    .d-buy:hover { background: #16a34a; }
+    .d-copy, .d-compare { font-size: 0.78rem; padding: 6px 12px; border-radius: var(--radius-xs);
+      background: var(--bg-2); border: 1px solid var(--border); color: var(--text-3);
+      cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .d-copy:hover, .d-compare:hover { border-color: var(--border-light); color: var(--text-2); }
+
+    /* Taken info */
+    .d-taken-info { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+      display: flex; gap: 20px; flex-wrap: wrap; }
+    .d-whois { font-size: 0.78rem; }
+    .d-whois-label { color: var(--text-4); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .d-whois-val { color: var(--text-2); }
+    .d-whois-val.expiring { color: var(--gold); }
+
+    /* Recommendations */
+    .recs-box { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 20px; }
+    .recs-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 12px; color: var(--text-2); }
+    .recs-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+    .rec-chip { display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+      background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-xs);
+      font-size: 0.82rem; cursor: pointer; transition: all 0.15s;
+      font-family: 'JetBrains Mono', monospace; }
+    .rec-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .rec-chip .rc-ext { color: var(--accent); font-weight: 600; }
+    .rec-chip .rc-price { color: var(--text-4); font-size: 0.72rem; }
+
+    /* Compare */
+    .compare-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--bg-2); border: 1px solid var(--accent); border-radius: var(--radius);
+      padding: 12px 20px; display: none; align-items: center; gap: 14px;
+      box-shadow: var(--shadow-lg); z-index: 100; }
+    .compare-bar.show { display: flex; }
+    .compare-label { font-size: 0.85rem; color: var(--text-2); }
+    .compare-label b { color: var(--accent); }
+    .compare-btn { font-size: 0.82rem; padding: 7px 16px; border-radius: var(--radius-xs);
+      background: var(--accent); color: white; border: none; font-weight: 600;
+      cursor: pointer; font-family: inherit; }
+    .compare-clear { font-size: 0.82rem; padding: 7px 16px; border-radius: var(--radius-xs);
+      background: var(--bg-3); border: 1px solid var(--border); color: var(--text-3);
+      cursor: pointer; font-family: inherit; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200;
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg-1); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 28px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal h2 { font-size: 1.1rem; margin-bottom: 16px; }
+    .modal table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .modal th { text-align: left; padding: 10px; border-bottom: 1px solid var(--border);
+      color: var(--text-3); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .modal td { padding: 10px; border-bottom: 1px solid var(--border); }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none;
+      color: var(--text-3); cursor: pointer; font-size: 1.2rem; }
+
+    /* Spinner */
+    .spin { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Confetti */
+    .confetti { position: fixed; width: 8px; height: 8px; border-radius: 2px; z-index: 1000;
+      pointer-events: none; animation: confettiDrop 3s ease forwards; }
+    @keyframes confettiDrop { 0%{opacity:1;transform:translateY(0) rotate(0)} 100%{opacity:0;transform:translateY(100vh) rotate(720deg)} }
+
+    /* RTL */
+    html[dir="rtl"] { direction: rtl; }
+    html[dir="rtl"] .country-pick { border-right: none; border-left: 1px solid var(--border); }
+    html[dir="rtl"] .d-card::before { left: auto; right: 0; }
+    html[dir="rtl"] .d-card.pinned::after { right: auto; left: 12px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .search-bar { flex-direction: column; }
+      .country-pick { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 14px; min-width: auto; }
+      .search-input { padding: 14px 16px; font-size: 1rem; }
+      .search-btn { padding: 14px 24px; }
+      .stats { gap: 8px; }
+      .stat-card { min-width: 120px; padding: 10px 14px; }
+      .d-prices { gap: 4px; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-0); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-4); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 48px 0 32px; color: var(--text-4); font-size: 0.78rem;
+      border-top: 1px solid var(--border); margin-top: 60px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">DOMAIN AXIS</div>
+      <span class="nav-badge">Pro</span>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn" id="langBtn" onclick="toggleLang()">🌐 עברית</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1><span data-i="hero_title">Find Your Perfect Domain</span></h1>
+    <p data-i="hero_sub">Search 250+ extensions across 10 registrars. Real prices, instant availability, smart recommendations.</p>
+  </section>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <div class="search-bar">
+      <div class="country-pick" id="countryPick" onclick="toggleCountryDrop()">
+        <span class="country-flag" id="cFlag">🌐</span>
+        <span class="country-name" id="cName" data-i="all_regions">All Regions</span>
+        <span class="country-arrow">▾</span>
+        <div class="country-drop" id="countryDrop"></div>
+      </div>
+      <input class="search-input" type="text" id="domainInput" data-ph="domain_ph" placeholder="domain name or full URL..." autocomplete="off" autocorrect="off" spellcheck="false" />
+      <button class="search-btn" id="searchBtn" onclick="startSearch()" data-i="search_btn">Search</button>
+    </div>
+  </div>
+
+  <!-- Quick category tags -->
+  <div class="quick-tags" id="catTags"></div>
+  <div class="search-hint"><kbd>Enter</kbd> <span data-i="hint_search">search</span> · <kbd>Esc</kbd> <span data-i="hint_clear">clear</span></div>
+
+  <!-- Results -->
+  <div id="resultsArea" style="margin-top:32px"></div>
+
+</div>
+
+<!-- Compare bar -->
+<div class="compare-bar" id="compareBar">
+  <span class="compare-label"><b id="compareCount">0</b> <span data-i="compare_selected">selected</span></span>
+  <button class="compare-btn" onclick="openCompare()" data-i="compare_btn">Compare</button>
+  <button class="compare-clear" onclick="clearCompare()" data-i="compare_clear">Clear</button>
+</div>
+
+<!-- Compare modal -->
+<div class="modal-overlay" id="compareModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeCompare()">✕</button>
+    <h2 data-i="compare_title">Domain Comparison</h2>
+    <div id="compareContent"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  DOMAIN AXIS PRO — <span data-i="footer">Checking availability via DNS + RDAP. Prices are approximate.</span>
+</footer>
+
+<script>
+// ==================== i18n ====================
+let lang = 'en';
+const I18N = {
+  en: {
+    hero_title: 'Find Your Perfect Domain',
+    hero_sub: 'Search 250+ extensions across 12 registrars. Real prices, instant availability, smart recommendations.',
+    all_regions: 'All Regions',
+    search_btn: 'Search',
+    domain_ph: 'domain name or full URL...',
+    hint_search: 'search', hint_clear: 'clear',
+    scanning: 'Scanning', extensions: 'extensions',
+    available: 'Available', taken: 'Taken', premium: 'Premium', total: 'Total',
+    all: 'All', avail_filter: 'Available', cheap_filter: 'Under $10', premium_filter: 'Premium', countries_filter: 'Countries',
+    export_csv: 'Export CSV', copy_all: 'Copy All', sort_avail: 'Available First',
+    results_for: 'Results for',
+    avail_badge: 'Available', taken_badge: 'Taken', error_badge: 'Error', checking: 'Checking...',
+    cheapest: 'Cheapest', seo: 'SEO', local_tag: 'Local', premium_tag: 'Premium', hot: 'Hot', exact: 'Exact Match',
+    price_compare: 'Price Comparison', best_price: 'Best Price',
+    buy: 'Buy', copy: 'Copy', compare_lbl: 'Compare',
+    registrar: 'Registrar', expires: 'Expires', created: 'Created', days: 'days',
+    recs_title: '💡 Top Recommendations',
+    compare_selected: 'selected', compare_btn: 'Compare', compare_clear: 'Clear', compare_title: 'Domain Comparison',
+    footer: 'Checking availability via DNS + RDAP. Prices are approximate.',
+    cat_popular: 'Popular', cat_tech: 'Tech', cat_country: 'Countries', cat_new: 'New gTLDs', cat_business: 'Business', cat_premium: 'Premium', cat_all: 'All',
+    lang_toggle: '🌐 עברית',
+    domain_col: 'Domain', price_col: 'Price', reg_col: 'Registrar', cat_col: 'Category', method_col: 'Method',
+  },
+  he: {
+    hero_title: 'מצא את הדומיין המושלם',
+    hero_sub: 'חיפוש 250+ סיומות ב-12 רגיסטררים. מחירים אמיתיים, זמינות מיידית, המלצות חכמות.',
+    all_regions: 'כל האזורים',
+    search_btn: 'חפש',
+    domain_ph: 'שם דומיין או כתובת מלאה...',
+    hint_search: 'חפש', hint_clear: 'נקה',
+    scanning: 'סורק', extensions: 'סיומות',
+    available: 'פנויים', taken: 'תפוסים', premium: 'פרימיום', total: 'סה"כ',
+    all: 'הכל', avail_filter: 'פנויים', cheap_filter: 'מתחת ל-$10', premium_filter: 'פרימיום', countries_filter: 'מדינות',
+    export_csv: 'ייצוא CSV', copy_all: 'העתק הכל', sort_avail: 'פנויים קודם',
+    results_for: 'תוצאות עבור',
+    avail_badge: 'פנוי', taken_badge: 'תפוס', error_badge: 'שגיאה', checking: 'בודק...',
+    cheapest: 'הכי זול', seo: 'SEO', local_tag: 'מקומי', premium_tag: 'פרימיום', hot: 'חם', exact: 'חיפוש מדויק',
+    price_compare: 'השוואת מחירים', best_price: 'המחיר הטוב',
+    buy: 'קנה', copy: 'העתק', compare_lbl: 'השווה',
+    registrar: 'רגיסטרר', expires: 'פג תוקף', created: 'נרשם', days: 'ימים',
+    recs_title: '💡 המלצות מובילות',
+    compare_selected: 'נבחרו', compare_btn: 'השווה', compare_clear: 'נקה', compare_title: 'השוואת דומיינים',
+    footer: 'בדיקת זמינות באמצעות DNS + RDAP. המחירים הם הערכה.',
+    cat_popular: 'פופולריים', cat_tech: 'טכנולוגיה', cat_country: 'מדינות', cat_new: 'gTLDs חדשים', cat_business: 'עסקים', cat_premium: 'פרימיום', cat_all: 'הכל',
+    lang_toggle: '🌐 English',
+    domain_col: 'דומיין', price_col: 'מחיר', reg_col: 'רגיסטרר', cat_col: 'קטגוריה', method_col: 'שיטה',
+  }
+};
+
+function t(key) { return I18N[lang]?.[key] || I18N.en[key] || key; }
+
+function toggleLang() {
+  lang = lang === 'en' ? 'he' : 'en';
+  document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
+  document.getElementById('langBtn').textContent = t('lang_toggle');
+  document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
+  buildCatTags();
+  buildCountryDrop();
+}
+
+// ==================== COUNTRIES ====================
+const COUNTRIES = [
+  { code: 'all', flag: '🌐', name: { en: 'All Regions', he: 'כל האזורים' }, tlds: [] },
+  { code: 'IL', flag: '🇮🇱', name: { en: 'Israel', he: 'ישראל' }, tlds: ['.co.il','.org.il','.net.il','.ac.il'] },
+  { code: 'US', flag: '🇺🇸', name: { en: 'United States', he: 'ארה"ב' }, tlds: ['.com','.us','.net','.org'] },
+  { code: 'GB', flag: '🇬🇧', name: { en: 'United Kingdom', he: 'בריטניה' }, tlds: ['.co.uk','.org.uk','.uk'] },
+  { code: 'DE', flag: '🇩🇪', name: { en: 'Germany', he: 'גרמניה' }, tlds: ['.de'] },
+  { code: 'FR', flag: '🇫🇷', name: { en: 'France', he: 'צרפת' }, tlds: ['.fr'] },
+  { code: 'EU', flag: '🇪🇺', name: { en: 'European Union', he: 'האיחוד האירופי' }, tlds: ['.eu'] },
+  { code: 'CA', flag: '🇨🇦', name: { en: 'Canada', he: 'קנדה' }, tlds: ['.ca'] },
+  { code: 'AU', flag: '🇦🇺', name: { en: 'Australia', he: 'אוסטרליה' }, tlds: ['.au','.com.au'] },
+  { code: 'JP', flag: '🇯🇵', name: { en: 'Japan', he: 'יפן' }, tlds: ['.jp'] },
+  { code: 'CN', flag: '🇨🇳', name: { en: 'China', he: 'סין' }, tlds: ['.cn'] },
+  { code: 'IN', flag: '🇮🇳', name: { en: 'India', he: 'הודו' }, tlds: ['.in'] },
+  { code: 'BR', flag: '🇧🇷', name: { en: 'Brazil', he: 'ברזיל' }, tlds: ['.br'] },
+  { code: 'NL', flag: '🇳🇱', name: { en: 'Netherlands', he: 'הולנד' }, tlds: ['.nl'] },
+  { code: 'SE', flag: '🇸🇪', name: { en: 'Sweden', he: 'שבדיה' }, tlds: ['.se'] },
+  { code: 'CH', flag: '🇨🇭', name: { en: 'Switzerland', he: 'שוויץ' }, tlds: ['.ch'] },
+  { code: 'RU', flag: '🇷🇺', name: { en: 'Russia', he: 'רוסיה' }, tlds: ['.ru'] },
+  { code: 'AE', flag: '🇦🇪', name: { en: 'UAE', he: 'איחוד האמירויות' }, tlds: ['.ae'] },
+  { code: 'SG', flag: '🇸🇬', name: { en: 'Singapore', he: 'סינגפור' }, tlds: ['.sg'] },
+  { code: 'HK', flag: '🇭🇰', name: { en: 'Hong Kong', he: 'הונג קונג' }, tlds: ['.hk'] },
+  { code: 'KR', flag: '🇰🇷', name: { en: 'South Korea', he: 'דרום קוריאה' }, tlds: ['.kr'] },
+  { code: 'MX', flag: '🇲🇽', name: { en: 'Mexico', he: 'מקסיקו' }, tlds: ['.mx'] },
+  { code: 'ES', flag: '🇪🇸', name: { en: 'Spain', he: 'ספרד' }, tlds: ['.es'] },
+  { code: 'IT', flag: '🇮🇹', name: { en: 'Italy', he: 'איטליה' }, tlds: ['.it'] },
+  { code: 'PL', flag: '🇵🇱', name: { en: 'Poland', he: 'פולין' }, tlds: ['.pl'] },
+  { code: 'TR', flag: '🇹🇷', name: { en: 'Turkey', he: 'טורקיה' }, tlds: ['.tr'] },
+];
+
+let selectedCountry = COUNTRIES[0];
+
+function buildCountryDrop() {
+  const drop = document.getElementById('countryDrop');
+  drop.innerHTML = COUNTRIES.map(c =>
+    `<div class="country-opt${c.code===selectedCountry.code?' active':''}" onclick="selectCountry('${c.code}')">
+      <span class="cflag">${c.flag}</span>
+      <span class="cname">${c.name[lang]||c.name.en}</span>
+      ${c.tlds.length ? `<span class="ctlds">${c.tlds.slice(0,3).join(' ')}</span>` : ''}
+    </div>`
+  ).join('');
+}
+
+function toggleCountryDrop() {
+  const drop = document.getElementById('countryDrop');
+  drop.classList.toggle('show');
+  setTimeout(() => document.addEventListener('click', closeCountryDrop, { once: true }), 10);
+}
+
+function closeCountryDrop(e) {
+  const drop = document.getElementById('countryDrop');
+  if (!drop.contains(e?.target)) drop.classList.remove('show');
+}
+
+function selectCountry(code) {
+  selectedCountry = COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
+  document.getElementById('cFlag').textContent = selectedCountry.flag;
+  document.getElementById('cName').textContent = selectedCountry.name[lang] || selectedCountry.name.en;
+  document.getElementById('countryDrop').classList.remove('show');
+  buildCountryDrop();
+}
+
+// ==================== TLD DATABASE ====================
+const TLDS = {
+  popular: [
+    { ext:'.com', name:'Commercial', cat:'popular', hot:true },
+    { ext:'.net', name:'Network', cat:'popular' },
+    { ext:'.org', name:'Organization', cat:'popular' },
+    { ext:'.co', name:'Company', cat:'popular', hot:true },
+    { ext:'.app', name:'Application', cat:'popular', hot:true },
+    { ext:'.dev', name:'Developer', cat:'popular', hot:true },
+    { ext:'.me', name:'Personal', cat:'popular' },
+    { ext:'.info', name:'Information', cat:'popular' },
+    { ext:'.biz', name:'Business', cat:'popular' },
+    { ext:'.page', name:'Page', cat:'popular' },
+    { ext:'.link', name:'Link', cat:'popular' },
+    { ext:'.click', name:'Click', cat:'popular' },
+    { ext:'.live', name:'Live', cat:'popular' },
+    { ext:'.blog', name:'Blog', cat:'popular' },
+    { ext:'.vip', name:'VIP', cat:'popular' },
+    { ext:'.group', name:'Group', cat:'popular' },
+    { ext:'.social', name:'Social', cat:'popular' },
+  ],
+  tech: [
+    { ext:'.io', name:'I/O', cat:'tech', premium:true, hot:true },
+    { ext:'.ai', name:'AI', cat:'tech', premium:true, hot:true },
+    { ext:'.tech', name:'Tech', cat:'tech' },
+    { ext:'.cloud', name:'Cloud', cat:'tech' },
+    { ext:'.code', name:'Code', cat:'tech' },
+    { ext:'.data', name:'Data', cat:'tech' },
+    { ext:'.digital', name:'Digital', cat:'tech' },
+    { ext:'.software', name:'Software', cat:'tech' },
+    { ext:'.systems', name:'Systems', cat:'tech' },
+    { ext:'.network', name:'Network', cat:'tech' },
+    { ext:'.web', name:'Web', cat:'tech' },
+    { ext:'.online', name:'Online', cat:'tech' },
+    { ext:'.site', name:'Site', cat:'tech' },
+    { ext:'.website', name:'Website', cat:'tech' },
+    { ext:'.space', name:'Space', cat:'tech' },
+    { ext:'.computer', name:'Computer', cat:'tech' },
+    { ext:'.email', name:'Email', cat:'tech' },
+    { ext:'.media', name:'Media', cat:'tech' },
+    { ext:'.run', name:'Run', cat:'tech' },
+    { ext:'.wiki', name:'Wiki', cat:'tech' },
+  ],
+  country: [
+    { ext:'.co.il', name:'Israel', cat:'country', local:true },
+    { ext:'.org.il', name:'Israel Org', cat:'country', local:true },
+    { ext:'.net.il', name:'Israel Net', cat:'country', local:true },
+    { ext:'.ac.il', name:'Israel Academic', cat:'country', local:true },
+    { ext:'.co.uk', name:'UK', cat:'country' },
+    { ext:'.org.uk', name:'UK Org', cat:'country' },
+    { ext:'.uk', name:'United Kingdom', cat:'country' },
+    { ext:'.de', name:'Germany', cat:'country' },
+    { ext:'.fr', name:'France', cat:'country' },
+    { ext:'.eu', name:'EU', cat:'country' },
+    { ext:'.us', name:'USA', cat:'country' },
+    { ext:'.ca', name:'Canada', cat:'country' },
+    { ext:'.au', name:'Australia', cat:'country' },
+    { ext:'.com.au', name:'Australia Com', cat:'country' },
+    { ext:'.jp', name:'Japan', cat:'country' },
+    { ext:'.cn', name:'China', cat:'country' },
+    { ext:'.in', name:'India', cat:'country' },
+    { ext:'.br', name:'Brazil', cat:'country' },
+    { ext:'.mx', name:'Mexico', cat:'country' },
+    { ext:'.es', name:'Spain', cat:'country' },
+    { ext:'.it', name:'Italy', cat:'country' },
+    { ext:'.nl', name:'Netherlands', cat:'country' },
+    { ext:'.se', name:'Sweden', cat:'country' },
+    { ext:'.ch', name:'Switzerland', cat:'country' },
+    { ext:'.pl', name:'Poland', cat:'country' },
+    { ext:'.ru', name:'Russia', cat:'country' },
+    { ext:'.ae', name:'UAE', cat:'country' },
+    { ext:'.sg', name:'Singapore', cat:'country' },
+    { ext:'.hk', name:'Hong Kong', cat:'country' },
+    { ext:'.nz', name:'New Zealand', cat:'country' },
+    { ext:'.za', name:'South Africa', cat:'country' },
+    { ext:'.ng', name:'Nigeria', cat:'country' },
+    { ext:'.ke', name:'Kenya', cat:'country' },
+    { ext:'.pk', name:'Pakistan', cat:'country' },
+    { ext:'.kr', name:'Korea', cat:'country' },
+    { ext:'.tw', name:'Taiwan', cat:'country' },
+    { ext:'.ua', name:'Ukraine', cat:'country' },
+    { ext:'.tr', name:'Turkey', cat:'country' },
+    { ext:'.pt', name:'Portugal', cat:'country' },
+    { ext:'.be', name:'Belgium', cat:'country' },
+    { ext:'.at', name:'Austria', cat:'country' },
+    { ext:'.fi', name:'Finland', cat:'country' },
+    { ext:'.dk', name:'Denmark', cat:'country' },
+    { ext:'.no', name:'Norway', cat:'country' },
+    { ext:'.ie', name:'Ireland', cat:'country' },
+    { ext:'.cz', name:'Czech Republic', cat:'country' },
+    { ext:'.ro', name:'Romania', cat:'country' },
+    { ext:'.hu', name:'Hungary', cat:'country' },
+    { ext:'.gr', name:'Greece', cat:'country' },
+    { ext:'.th', name:'Thailand', cat:'country' },
+    { ext:'.ph', name:'Philippines', cat:'country' },
+    { ext:'.my', name:'Malaysia', cat:'country' },
+    { ext:'.id', name:'Indonesia', cat:'country' },
+    { ext:'.vn', name:'Vietnam', cat:'country' },
+    { ext:'.cl', name:'Chile', cat:'country' },
+    { ext:'.co.za', name:'South Africa', cat:'country' },
+    { ext:'.ar', name:'Argentina', cat:'country' },
+    { ext:'.pe', name:'Peru', cat:'country' },
+  ],
+  new: [
+    { ext:'.xyz', name:'XYZ', cat:'new', hot:true },
+    { ext:'.store', name:'Store', cat:'new' },
+    { ext:'.shop', name:'Shop', cat:'new' },
+    { ext:'.fun', name:'Fun', cat:'new' },
+    { ext:'.work', name:'Work', cat:'new' },
+    { ext:'.world', name:'World', cat:'new' },
+    { ext:'.global', name:'Global', cat:'new' },
+    { ext:'.today', name:'Today', cat:'new' },
+    { ext:'.news', name:'News', cat:'new' },
+    { ext:'.city', name:'City', cat:'new' },
+    { ext:'.zone', name:'Zone', cat:'new' },
+    { ext:'.video', name:'Video', cat:'new' },
+    { ext:'.photos', name:'Photos', cat:'new' },
+    { ext:'.film', name:'Film', cat:'new' },
+    { ext:'.plus', name:'Plus', cat:'new' },
+    { ext:'.press', name:'Press', cat:'new' },
+    { ext:'.center', name:'Center', cat:'new' },
+    { ext:'.place', name:'Place', cat:'new' },
+    { ext:'.support', name:'Support', cat:'new' },
+    { ext:'.help', name:'Help', cat:'new' },
+    { ext:'.care', name:'Care', cat:'new' },
+    { ext:'.community', name:'Community', cat:'new' },
+    { ext:'.studio', name:'Studio', cat:'new' },
+    { ext:'.team', name:'Team', cat:'new' },
+    { ext:'.art', name:'Art', cat:'new' },
+    { ext:'.design', name:'Design', cat:'new' },
+    { ext:'.bio', name:'Bio', cat:'new' },
+  ],
+  business: [
+    { ext:'.company', name:'Company', cat:'business' },
+    { ext:'.solutions', name:'Solutions', cat:'business' },
+    { ext:'.consulting', name:'Consulting', cat:'business' },
+    { ext:'.services', name:'Services', cat:'business' },
+    { ext:'.agency', name:'Agency', cat:'business' },
+    { ext:'.marketing', name:'Marketing', cat:'business' },
+    { ext:'.market', name:'Market', cat:'business' },
+    { ext:'.trade', name:'Trade', cat:'business' },
+    { ext:'.finance', name:'Finance', cat:'business' },
+    { ext:'.legal', name:'Legal', cat:'business' },
+    { ext:'.law', name:'Law', cat:'business' },
+    { ext:'.health', name:'Health', cat:'business' },
+    { ext:'.education', name:'Education', cat:'business' },
+    { ext:'.academy', name:'Academy', cat:'business' },
+    { ext:'.school', name:'School', cat:'business' },
+    { ext:'.training', name:'Training', cat:'business' },
+    { ext:'.fitness', name:'Fitness', cat:'business' },
+    { ext:'.restaurant', name:'Restaurant', cat:'business' },
+    { ext:'.cafe', name:'Cafe', cat:'business' },
+    { ext:'.bar', name:'Bar', cat:'business' },
+    { ext:'.club', name:'Club', cat:'business' },
+    { ext:'.beauty', name:'Beauty', cat:'business' },
+    { ext:'.salon', name:'Salon', cat:'business' },
+    { ext:'.tools', name:'Tools', cat:'business' },
+    { ext:'.shopping', name:'Shopping', cat:'business' },
+    { ext:'.retail', name:'Retail', cat:'business' },
+    { ext:'.travel', name:'Travel', cat:'business' },
+    { ext:'.hotel', name:'Hotel', cat:'business' },
+    { ext:'.food', name:'Food', cat:'business' },
+    { ext:'.realestate', name:'Real Estate', cat:'business' },
+    { ext:'.properties', name:'Properties', cat:'business' },
+    { ext:'.rentals', name:'Rentals', cat:'business' },
+  ],
+  premium: [
+    { ext:'.tv', name:'TV', cat:'premium', premium:true },
+    { ext:'.cc', name:'CC', cat:'premium', premium:true },
+    { ext:'.fm', name:'FM', cat:'premium', premium:true },
+    { ext:'.inc', name:'Incorporated', cat:'premium', premium:true },
+    { ext:'.llc', name:'LLC', cat:'premium' },
+    { ext:'.ventures', name:'Ventures', cat:'premium' },
+    { ext:'.capital', name:'Capital', cat:'premium' },
+    { ext:'.partners', name:'Partners', cat:'premium' },
+    { ext:'.fund', name:'Fund', cat:'premium' },
+    { ext:'.holdings', name:'Holdings', cat:'premium' },
+    { ext:'.investments', name:'Investments', cat:'premium' },
+    { ext:'.bank', name:'Bank', cat:'premium', premium:true },
+    { ext:'.insurance', name:'Insurance', cat:'premium' },
+    { ext:'.attorney', name:'Attorney', cat:'premium' },
+    { ext:'.doctor', name:'Doctor', cat:'premium' },
+    { ext:'.hospital', name:'Hospital', cat:'premium' },
+    { ext:'.medical', name:'Medical', cat:'premium' },
+    { ext:'.auto', name:'Auto', cat:'premium' },
+    { ext:'.cars', name:'Cars', cat:'premium' },
+    { ext:'.university', name:'University', cat:'premium' },
+    { ext:'.flights', name:'Flights', cat:'premium' },
+    { ext:'.im', name:'Isle of Man', cat:'premium' },
+    { ext:'.sh', name:'Shell', cat:'premium' },
+  ],
+};
+
+function buildTLDArray(cats) {
+  const seen = new Set(), arr = [];
+  cats.forEach(cat => (TLDS[cat]||[]).forEach(tl => { if (!seen.has(tl.ext)) { seen.add(tl.ext); arr.push(tl); } }));
+  return arr;
+}
+
+// ==================== REGISTRAR PRICING ====================
+// ✅ All URLs verified in browser on 2026-03-09
+// Generated by grab-links.js — DO NOT EDIT MANUALLY
+const REGS = {
+  // 🔑 Cloudflare
+  cloudflare: { name:'Cloudflare', icon:'☁️',
+    buy: d => `https://dash.cloudflare.com/?to=/:account/domains/register/${d}`,
+    p:{".com":"$8.57",".net":"$8.57",".org":"$8.57",".io":"$40.00",".ai":"$70.00",".app":"$8.57",".dev":"$8.57",".info":"$8.57",".biz":"$8.57",".co":"$8.57",".uk":"£5.48",".de":"€5.86",".fr":"€7.51",".eu":"€4.00"}},
+  // 🌐 Spaceship
+  spaceship: { name:'Spaceship', icon:'🚀',
+    buy: d => `https://www.spaceship.com/domain/search/?query=${d}`,
+    p:{".com":"$8.78",".net":"$9.38",".org":"$9.28",".io":"$32.98",".co":"$8.98",".ai":"$62.98",".dev":"$9.98",".app":"$9.98",".xyz":"$1.48",".online":"$1.98",".tech":"$3.98",".site":"$1.98",".store":"$2.98",".me":"$6.98",".info":"$5.98",".biz":"$6.98",".de":"€5.28",".uk":"£4.98",".eu":"€3.78",".co.uk":"£4.98"}},
+  // ✅ Dynadot
+  dynadot: { name:'Dynadot', icon:'🔷',
+    buy: d => `https://www.dynadot.com/domain/search?domain=${d}`,
+    p:{".com":"$8.99",".net":"$9.99",".org":"$8.99",".io":"$34.99",".co":"$9.49",".ai":"$64.99",".dev":"$9.49",".app":"$9.49",".xyz":"$1.49",".online":"$1.99",".tech":"$3.99",".site":"$1.99",".store":"$2.49",".me":"$5.99",".info":"$7.99",".biz":"$7.49",".de":"€5.99",".uk":"£5.49",".eu":"€3.99",".cc":"$16.99",".tv":"$28.99"}},
+  // ✅ Porkbun
+  porkbun: { name:'Porkbun', icon:'🐷',
+    buy: d => `https://porkbun.com/checkout/search?q=${d}`,
+    p:{".com":"$9.99",".net":"$9.99",".org":"$9.99",".io":"$35.00",".co":"$9.99",".ai":"$65.00",".app":"$9.99",".dev":"$9.00",".me":"$8.99",".info":"$7.99",".tech":"$4.99",".cloud":"$6.99",".xyz":"$1.99",".online":"$2.99",".site":"$2.99",".store":"$3.99",".shop":"$4.99",".link":"$2.99",".click":"$2.99",".fun":"$3.99",".work":"$2.99",".live":"$3.99",".blog":"$4.99",".vip":"$3.99",".biz":"$8.99",".co.uk":"£5.99",".de":"€5.99",".fr":"€7.99",".eu":"€4.99",".us":"$3.99",".ca":"$9.99",".au":"$9.99",".design":"$35",".art":"$20",".tv":"$30.00",".cc":"$18.00",".fm":"$65.00",".llc":"$9.99",".inc":"$199"}},
+  // 🌐 Namecheap — Does NOT support .co.il domains
+  namecheap: { name:'Namecheap', icon:'🟠',
+    buy: d => `https://www.namecheap.com/domains/registration/results/?domain=${d}`,
+    p:{".com":"$12.99",".net":"$12.99",".org":"$12.99",".io":"$39.00",".co":"$9.99",".ai":"$70.00",".app":"$12.99",".dev":"$12.00",".me":"$9.99",".info":"$9.99",".tech":"$4.99",".cloud":"$8.99",".xyz":"$1.99",".online":"$2.99",".site":"$2.99",".store":"$3.99",".shop":"$5.99",".biz":"$9.99",".co.uk":"£6.99",".de":"€6.99",".fr":"€9.99",".eu":"€5.99",".us":"$4.99",".ca":"$12.99",".tv":"$35",".cc":"$19.99"}},
+  // 🌐 GoDaddy — Also handles .co.il domains! Verified $79.99/yr
+  godaddy: { name:'GoDaddy', icon:'🟢',
+    buy: d => `https://www.godaddy.com/domainsearch/find?checkAvail=1&domainToCheck=${d}`,
+    p:{".com":"$17.99",".net":"$17.99",".org":"$17.99",".io":"$74.99",".co":"$19.99",".ai":"$119.99",".app":"$16.99",".dev":"$16.99",".me":"$17.99",".info":"$14.99",".tech":"$12.99",".xyz":"$3.99",".biz":"$17.99",".tv":"$49.99",".cc":"$29.99",".co.il":"$79.99",".org.il":"$79.99",".net.il":"$79.99",".ac.il":"$79.99"}},
+  // ✅ Hover — Old URL /domain-search?q= is BROKEN — use /domains/results?q=
+  hover: { name:'Hover', icon:'🔵',
+    buy: d => `https://www.hover.com/domains/results?q=${d}`,
+    p:{".com":"$12.99",".net":"$12.99",".org":"$12.99",".co":"$12.99",".io":"$45.00",".ai":"$80.00",".me":"$12.99",".us":"$9.99",".ca":"$12.99"}},
+  // 🌐 Squarespace — Replaced Google Domains (shut down July 2024, migrated to Squarespace)
+  squarespace: { name:'Squarespace', icon:'⬛',
+    buy: d => `https://domains.squarespace.com/search?query=${d}`,
+    p:{".app":"$14.00",".dev":"$12.00",".page":"$12.00",".io":"$50.00",".ai":"$80.00",".com":"$12.00",".net":"$12.00",".org":"$12.00"}},
+  // ✅ IONOS — JS-based search form — no query param support. Links to main domain page. First-year promo prices!
+  ionos: { name:'IONOS', icon:'💙',
+    buy: d => `https://www.ionos.com/domains/domain-names`,
+    p:{".com":"$1.00",".net":"$1.00",".org":"$1.00",".online":"$0.50",".site":"$0.50",".xyz":"$1.00",".io":"$40.00",".ai":"$58.00",".co":"$2.00",".me":"$2.00",".info":"$2.00",".biz":"$1.00",".us":"$2.00",".de":"€1.00",".co.uk":"£1.00",".eu":"€1.00"}},
+  // ✅ DreamHost
+  dreamhost: { name:'DreamHost', icon:'🌙',
+    buy: d => `https://www.dreamhost.com/domains/?domain=${d}`,
+    p:{".com":"$8.99",".net":"$10.99",".org":"$10.99",".info":"$10.99",".co":"$10.99",".io":"$39.99",".biz":"$12.99",".us":"$8.99",".xyz":"$1.99",".online":"$2.99",".tech":"$4.99",".site":"$2.99",".club":"$5.99"}},
+  // 🌐 Gandi — European registrar. Server returns 500 to non-browser requests but works in real browser.
+  gandi: { name:'Gandi', icon:'🦎',
+    buy: d => `https://shop.gandi.net/en/domain/suggest?search=${d}`,
+    p:{".com":"$14.94",".net":"$14.94",".org":"$12.54",".io":"$43.14",".ai":"$74.94",".co":"$14.34",".dev":"$14.34",".app":"$16.14",".me":"$11.34",".info":"$15.54",".fr":"€12.54",".eu":"€5.94",".de":"€11.34",".co.uk":"£10.74",".be":"€10.74",".ch":"€12.54",".nl":"€10.74"}},
+};
+
+function getRegistrars(ext) {
+  return Object.entries(REGS).filter(([,r])=>r.p[ext])
+    .map(([id,r])=>({id,name:r.name,icon:r.icon||'',price:r.p[ext],buyFn:r.buy}))
+    .sort((a,b)=>parseFloat(a.price.replace(/[^0-9.]/g,''))-parseFloat(b.price.replace(/[^0-9.]/g,'')));
+}
+function cheapest(ext) { return getRegistrars(ext)[0] || null; }
+
+// ==================== STATE ====================
+let query = '', results = {}, compareSet = new Set(), activeFilter = 'all', scanning = false, totalTLDs = 0, pinnedDomain = null;
+
+// ==================== CATEGORY TAGS ====================
+let activeCats = new Set(['popular']);
+
+function buildCatTags() {
+  const keys = [['all','cat_all'],['popular','cat_popular'],['tech','cat_tech'],['country','cat_country'],['new','cat_new'],['business','cat_business'],['premium','cat_premium']];
+  document.getElementById('catTags').innerHTML = keys.map(([k,i]) =>
+    `<span class="qtag${activeCats.has(k)||activeCats.has('all')&&k==='all'?' on':''}" data-cat="${k}" onclick="toggleCat(this)">${t(i)}</span>`
+  ).join('');
+}
+
+function toggleCat(el) {
+  const cat = el.dataset.cat;
+  if (cat === 'all') {
+    activeCats.clear(); activeCats.add('all');
+  } else {
+    activeCats.delete('all');
+    if (activeCats.has(cat)) activeCats.delete(cat); else activeCats.add(cat);
+    if (activeCats.size === 0) activeCats.add('all');
+  }
+  buildCatTags();
+}
+
+function getActiveCats() {
+  if (activeCats.has('all')) return Object.keys(TLDS);
+  return [...activeCats].filter(c => TLDS[c]);
+}
+
+// ==================== CORS PROXY ====================
+const PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+async function fetchWithProxy(url, timeout=4000) {
+  for (const mk of PROXIES) {
+    try { const r = await fetch(mk(url),{signal:AbortSignal.timeout(timeout)}); if(r.ok||r.status===404) return r; } catch(e){}
+  }
+  return fetch(url,{signal:AbortSignal.timeout(timeout)});
+}
+
+// ==================== SMART INPUT PARSER ====================
+function parseDomainInput(raw) {
+  raw = raw.toLowerCase().trim().replace(/^https?:\/\//,'').replace(/\/.*$/,'').replace(/^www\./,'');
+  const allExts = Object.values(TLDS).flat().map(t=>t.ext);
+  allExts.sort((a,b)=>b.length-a.length);
+  for (const ext of allExts) {
+    if (raw.endsWith(ext)) {
+      const name = raw.slice(0,-ext.length).replace(/\.+$/,'');
+      if (name.length>=1) return {name,exactExt:ext,isExact:true};
+    }
+  }
+  return {name:raw.replace(/[^a-z0-9-]/g,'').replace(/^-+|-+$/g,''),exactExt:null,isExact:false};
+}
+
+// ==================== CHECKER ENGINE ====================
+async function checkDomain(name, tld) {
+  const full = name + tld.ext;
+  let available = null, method = '';
+
+  // 1. Google DNS
+  try {
+    const r = await fetch(`https://dns.google/resolve?name=${full}&type=A`,{signal:AbortSignal.timeout(3000)});
+    const d = await r.json();
+    if (d.Status===3) { available=true; method='DNS'; }
+    else if (d.Status===0 && d.Answer?.length>0) { available=false; method='DNS'; }
+  } catch(e){}
+
+  // 2. Cloudflare DNS
+  if (available===null) {
+    try {
+      const r = await fetch(`https://cloudflare-dns.com/dns-query?name=${full}&type=A`,{headers:{'Accept':'application/dns-json'},signal:AbortSignal.timeout(3000)});
+      const d = await r.json();
+      if (d.Status===3) { available=true; method='CF-DNS'; }
+      else if (d.Status===0 && d.Answer?.length>0) { available=false; method='CF-DNS'; }
+    } catch(e){}
+  }
+
+  // 3. RDAP fallback
+  if (available===null) {
+    try {
+      const r = await fetchWithProxy(`https://rdap.org/domain/${full}`,5000);
+      if (r.status===404) { available=true; method='RDAP'; }
+      else if (r.ok) { available=false; method='RDAP'; }
+    } catch(e){}
+  }
+
+  const regs = getRegistrars(tld.ext);
+  const cheap = cheapest(tld.ext);
+
+  const result = { status: available===true?'available':available===false?'taken':'error', tld, method:method||'?', regs, cheap, whois:null };
+
+  // WHOIS for taken
+  if (result.status==='taken') {
+    try {
+      const w = await fetchWithProxy(`https://who-dat.as93.net/${full}`,5000);
+      if (w.ok) {
+        const d = await w.json();
+        result.whois = { registrar:d.registrar?.name||null, expires:d.registry_expiry_date||null, created:d.creation_date||null };
+      }
+    } catch(e){}
+  }
+
+  return result;
+}
+
+// ==================== SEARCH ====================
+async function startSearch() {
+  if (scanning) return;
+  const raw = document.getElementById('domainInput').value.trim();
+  if (!raw || raw.length < 2) return;
+
+  const parsed = parseDomainInput(raw);
+  if (!parsed.name) return;
+  query = parsed.name;
+  pinnedDomain = parsed.isExact ? { name:parsed.name, ext:parsed.exactExt } : null;
+
+  scanning = true; results = {}; compareSet.clear(); activeFilter = 'all'; updateCompareBar();
+
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true; btn.innerHTML = `<span class="spin"></span>`;
+
+  const cats = getActiveCats();
+  let tlds = buildTLDArray(cats.length ? cats : Object.keys(TLDS));
+
+  // Country filter: prioritize country TLDs
+  if (selectedCountry.code !== 'all') {
+    const countryExts = new Set(selectedCountry.tlds);
+    // Add country TLDs that might not be in current categories
+    const allFlat = Object.values(TLDS).flat();
+    selectedCountry.tlds.forEach(ext => {
+      if (!tlds.some(t=>t.ext===ext)) {
+        const found = allFlat.find(t=>t.ext===ext);
+        if (found) tlds.unshift(found);
+        else tlds.unshift({ext,name:ext.replace(/^\./,'').toUpperCase(),cat:'country'});
+      }
+    });
+    // Sort: country TLDs first
+    tlds.sort((a,b) => (countryExts.has(b.ext)?1:0)-(countryExts.has(a.ext)?1:0));
+  }
+
+  // Pin exact domain first
+  if (pinnedDomain) {
+    const has = tlds.some(t=>t.ext===pinnedDomain.ext);
+    if (!has) {
+      const allFlat = Object.values(TLDS).flat();
+      const found = allFlat.find(t=>t.ext===pinnedDomain.ext);
+      tlds.unshift(found || {ext:pinnedDomain.ext,name:pinnedDomain.ext.replace(/^\./,'').toUpperCase(),cat:'other'});
+    } else {
+      tlds = [tlds.find(t=>t.ext===pinnedDomain.ext), ...tlds.filter(t=>t.ext!==pinnedDomain.ext)];
+    }
+  }
+
+  totalTLDs = tlds.length;
+  renderResults(tlds);
+
+  // Check pinned first
+  if (pinnedDomain) {
+    results[tlds[0].ext] = await checkDomain(query, tlds[0]);
+    updateUI();
+    updateCard(tlds[0].ext);
+  }
+
+  // Check rest in batches of 50
+  const rest = pinnedDomain ? tlds.slice(1) : tlds;
+  for (let i=0; i<rest.length; i+=50) {
+    const batch = rest.slice(i,i+50);
+    await Promise.all(batch.map(async tld => {
+      results[tld.ext] = await checkDomain(query, tld);
+      updateUI();
+      updateCard(tld.ext);
+    }));
+  }
+
+  scanning = false;
+  btn.disabled = false; btn.textContent = t('search_btn');
+  renderRecs(tlds);
+  if (results['.com']?.status==='available') spawnConfetti();
+}
+
+// ==================== RENDER ====================
+function renderResults(tlds) {
+  const area = document.getElementById('resultsArea');
+  area.innerHTML = `
+    <div class="progress" id="progressWrap">
+      <div class="progress-top">
+        <span class="progress-label">${t('scanning')} <b>${tlds.length}</b> ${t('extensions')}</span>
+        <span class="progress-label"><b id="progNum">0</b> / ${tlds.length}</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+    </div>
+    <div class="stats" id="statsWrap">
+      <div class="stat-card s-green"><div class="stat-icon">✓</div><div><div class="stat-val" id="sA">0</div><div class="stat-label">${t('available')}</div></div></div>
+      <div class="stat-card s-red"><div class="stat-icon">✕</div><div><div class="stat-val" id="sT">0</div><div class="stat-label">${t('taken')}</div></div></div>
+      <div class="stat-card s-gold"><div class="stat-icon">◆</div><div><div class="stat-val" id="sP">0</div><div class="stat-label">${t('premium')}</div></div></div>
+      <div class="stat-card s-blue"><div class="stat-icon">#</div><div><div class="stat-val">${tlds.length}</div><div class="stat-label">${t('total')}</div></div></div>
+    </div>
+    <div id="recsBox"></div>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="filter-pill active" onclick="setFilter('all',this)">${t('all')}</button>
+        <button class="filter-pill" onclick="setFilter('available',this)">✓ ${t('avail_filter')}</button>
+        <button class="filter-pill" onclick="setFilter('cheap',this)">$ ${t('cheap_filter')}</button>
+        <button class="filter-pill" onclick="setFilter('premium',this)">◆ ${t('premium_filter')}</button>
+        <button class="filter-pill" onclick="setFilter('country',this)">🌍 ${t('countries_filter')}</button>
+      </div>
+      <div class="toolbar-right">
+        <button class="tool-btn" onclick="exportCSV()">↓ ${t('export_csv')}</button>
+        <button class="tool-btn" onclick="copyAllAvailable()">⎘ ${t('copy_all')}</button>
+      </div>
+    </div>
+    <div class="results-grid" id="grid">
+      ${tlds.map((tl,i) => cardHTML(tl,{status:'loading',method:'...',regs:[],cheap:null},i)).join('')}
+    </div>
+  `;
+}
+
+function cardHTML(tld, res, idx) {
+  const full = query + tld.ext;
+  const st = res.status;
+  const isPinned = pinnedDomain && tld.ext === pinnedDomain.ext;
+  const cls = st==='available'?'avail':st==='taken'?'taken':'loading';
+  const badgeCls = st==='available'?'avail':st==='taken'?'taken':st==='error'?'err':'load';
+  const badgeText = st==='available'?t('avail_badge'):st==='taken'?t('taken_badge'):st==='error'?t('error_badge'):t('checking');
+  const spin = st==='loading'?` <span class="spin"></span>`:'';
+
+  // Tags
+  let tags = `<span class="d-tag cat">${tld.name}</span>`;
+  if (res.method && res.method !== '...') tags += `<span class="d-tag method">${res.method}</span>`;
+  if (isPinned) tags += `<span class="d-tag pinned-tag">📌 ${t('exact')}</span>`;
+  if (st==='available') {
+    const p = res.cheap ? parseFloat(res.cheap.price.replace(/[^0-9.]/g,'')) : 999;
+    if (p<=5) tags+=`<span class="d-tag cheap">🏆 ${t('cheapest')}</span>`;
+    if (['.com','.net','.org'].includes(tld.ext)) tags+=`<span class="d-tag seo">⚡ ${t('seo')}</span>`;
+    if (tld.local) tags+=`<span class="d-tag local">📍 ${t('local_tag')}</span>`;
+    if (tld.premium) tags+=`<span class="d-tag premium">◆ ${t('premium_tag')}</span>`;
+    if (tld.hot) tags+=`<span class="d-tag hot">🔥 ${t('hot')}</span>`;
+  }
+
+  // Pricing section
+  let pricing = '';
+  if (st==='available' && res.regs?.length) {
+    const prices = res.regs.map((r,i)=>`<div class="d-price${i===0?' best':''}"><span class="p-name">${r.name}</span><span class="p-val">${r.price}</span></div>`).join('');
+    const buyLinks = res.regs.slice(0,3).map(r=>`<a class="d-buy" href="${r.buyFn(full)}" target="_blank" rel="noopener">${r.icon||'🛒'} ${r.name} ${r.price}</a>`).join('');
+    pricing = `<div class="d-pricing">
+      <div class="d-prices">${prices}</div>
+      <div class="d-actions">
+        ${buyLinks}
+        <button class="d-copy" onclick="copyDomain('${full}',this)">⎘ ${t('copy')}</button>
+        <label class="d-compare"><input type="checkbox" onchange="toggleCompare('${full}',this)" ${compareSet.has(full)?'checked':''}> ${t('compare_lbl')}</label>
+      </div>
+    </div>`;
+  } else if (st==='taken') {
+    let whoisHtml = '';
+    if (res.whois) {
+      const exp = res.whois.expires ? new Date(res.whois.expires) : null;
+      const days = exp ? Math.floor((exp-Date.now())/86400000) : null;
+      whoisHtml = `<div class="d-taken-info">
+        ${res.whois.registrar?`<div class="d-whois"><div class="d-whois-label">${t('registrar')}</div><div class="d-whois-val">${res.whois.registrar}</div></div>`:''}
+        ${exp?`<div class="d-whois"><div class="d-whois-label">${t('expires')}</div><div class="d-whois-val${days<90?' expiring':''}">${exp.toLocaleDateString('en-US')}${days!==null?` (${days} ${t('days')})`:''}</div></div>`:''}
+        ${res.whois.created?`<div class="d-whois"><div class="d-whois-label">${t('created')}</div><div class="d-whois-val">${new Date(res.whois.created).toLocaleDateString('en-US')}</div></div>`:''}
+      </div>`;
+    }
+    pricing = whoisHtml;
+  }
+
+  return `<div class="d-card ${cls}${isPinned?' pinned':''}" data-ext="${tld.ext}" data-st="${st}" data-cat="${tld.cat}" data-price="${res.cheap?parseFloat(res.cheap.price.replace(/[^0-9.]/g,'')):9999}" style="animation-delay:${idx*10}ms">
+    <div class="d-top">
+      <div>
+        <div class="d-name"><span class="name">${query}</span><span class="ext">${tld.ext}</span>${spin}</div>
+        <div class="d-meta">${tags}</div>
+      </div>
+      <span class="d-badge ${badgeCls}">${badgeText}</span>
+    </div>
+    ${pricing}
+  </div>`;
+}
+
+function updateCard(ext) {
+  const res = results[ext]; if (!res) return;
+  const el = document.querySelector(`[data-ext="${CSS.escape(ext)}"]`); if (!el) return;
+  const idx = parseInt(el.style.animationDelay)/10;
+  el.outerHTML = cardHTML(res.tld, res, idx);
+  applyFilter();
+}
+
+function updateUI() {
+  const vals = Object.values(results);
+  const a = vals.filter(r=>r.status==='available').length;
+  const tk = vals.filter(r=>r.status==='taken').length;
+  const p = vals.filter(r=>r.status==='available'&&r.tld.premium).length;
+  const done = vals.length;
+  const el = id => document.getElementById(id);
+  if(el('sA')) el('sA').textContent=a;
+  if(el('sT')) el('sT').textContent=tk;
+  if(el('sP')) el('sP').textContent=p;
+  if(el('progNum')) el('progNum').textContent=done;
+  if(el('progFill')) el('progFill').style.width=(done/totalTLDs*100)+'%';
+}
+
+function renderRecs(tlds) {
+  const box = document.getElementById('recsBox'); if(!box) return;
+  const avail = tlds.filter(t=>results[t.ext]?.status==='available');
+  if (!avail.length) return;
+  const recs = [
+    avail.find(t=>t.ext==='.com'),
+    avail.find(t=>['.net','.org'].includes(t.ext)),
+    avail.find(t=>t.local),
+    avail.find(t=>['.ai','.io'].includes(t.ext)),
+    ...avail.filter(t=>t.hot).slice(0,2),
+    ...avail.filter(t=>results[t.ext]?.cheap&&parseFloat(results[t.ext].cheap.price.replace(/[^0-9.]/g,''))<4).slice(0,3),
+  ].filter(Boolean).filter((t,i,a)=>a.findIndex(x=>x.ext===t.ext)===i).slice(0,8);
+  if (!recs.length) return;
+  box.innerHTML = `<div class="recs-box">
+    <div class="recs-title">${t('recs_title')}</div>
+    <div class="recs-grid">${recs.map(tl=>{
+      const r=results[tl.ext];
+      return `<div class="rec-chip" onclick="scrollTo('${tl.ext}')"><span>${query}</span><span class="rc-ext">${tl.ext}</span>${r?.cheap?`<span class="rc-price">${r.cheap.price}</span>`:''}</div>`;
+    }).join('')}</div>
+  </div>`;
+}
+
+function scrollTo(ext) {
+  document.querySelector(`[data-ext="${CSS.escape(ext)}"]`)?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+// ==================== FILTERS ====================
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter() {
+  document.querySelectorAll('.d-card[data-ext]').forEach(card => {
+    const st=card.dataset.st, cat=card.dataset.cat, price=parseFloat(card.dataset.price);
+    let show=true;
+    if(activeFilter==='available') show=st==='available';
+    else if(activeFilter==='cheap') show=st==='available'&&price<10;
+    else if(activeFilter==='premium') show=card.querySelector('.d-tag.premium')!==null;
+    else if(activeFilter==='country') show=cat==='country';
+    card.style.display=show?'':'none';
+  });
+}
+
+// ==================== COMPARE ====================
+function toggleCompare(d,cb) { if(cb.checked)compareSet.add(d);else compareSet.delete(d); updateCompareBar(); }
+function updateCompareBar() {
+  document.getElementById('compareCount').textContent=compareSet.size;
+  document.getElementById('compareBar').classList.toggle('show',compareSet.size>=2);
+}
+function openCompare() {
+  const doms=[...compareSet];
+  const rows=doms.map(d=>{
+    const ext=d.substring(query.length);
+    const r=results[ext];
+    return `<tr><td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">${d}</td><td>${r?.cheap?.price||'—'}</td><td>${r?.cheap?.name||'—'}</td><td>${r?.tld?.name||''}</td><td>${r?.method||''}</td></tr>`;
+  }).join('');
+  document.getElementById('compareContent').innerHTML=`<table><thead><tr><th>${t('domain_col')}</th><th>${t('price_col')}</th><th>${t('reg_col')}</th><th>${t('cat_col')}</th><th>${t('method_col')}</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('compareModal').classList.add('show');
+}
+function closeCompare() { document.getElementById('compareModal').classList.remove('show'); }
+function clearCompare() {
+  compareSet.clear();
+  document.querySelectorAll('.d-compare input').forEach(cb=>cb.checked=false);
+  updateCompareBar();
+}
+
+// ==================== ACTIONS ====================
+function copyDomain(d,btn) { navigator.clipboard.writeText(d).then(()=>{const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1200);}); }
+function copyAllAvailable() {
+  const list=Object.entries(results).filter(([,r])=>r.status==='available').map(([ext])=>query+ext);
+  if(list.length) navigator.clipboard.writeText(list.join('\n')).then(()=>alert(`Copied ${list.length} domains!`));
+}
+function exportCSV() {
+  const rows=[[t('domain_col'),t('price_col'),t('reg_col'),t('cat_col'),t('method_col')]];
+  Object.entries(results).forEach(([ext,r])=>rows.push([query+ext,r.cheap?.price||'—',r.cheap?.name||'—',r.tld?.cat||'',r.method]));
+  const csv=rows.map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('\uFEFF'+csv);
+  a.download=`domains-${query}.csv`; a.click();
+}
+
+// ==================== CONFETTI ====================
+function spawnConfetti() {
+  const colors=['#3b82f6','#22c55e','#eab308','#a855f7','#ef4444','#06b6d4'];
+  for(let i=0;i<60;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');el.className='confetti';
+      el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*0.4}s`;
+      document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
+    },i*25);
+  }
+}
+
+// ==================== KEYBOARD ====================
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.activeElement===document.getElementById('domainInput')) startSearch();
+  if(e.key==='Escape'){document.getElementById('domainInput').value='';document.getElementById('domainInput').focus();}
+});
+
+// ==================== INIT ====================
+buildCatTags();
+buildCountryDrop();
+</script>
+</body>
+</html>

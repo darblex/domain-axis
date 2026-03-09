@@ -1,0 +1,55 @@
+{
+  "timestamp": "2026-03-09T10:18:35.712Z",
+  "testDomain": "ai-group.com",
+  "testIlDomain": "ai-group.co.il",
+  "results": {
+    "dynadot": {
+      "name": "Dynadot",
+      "status": "ok",
+      "httpStatus": 200,
+      "ms": 1792,
+      "finalUrl": "https://www.dynadot.com/domain/search?domain=ai-group.com",
+      "title": "Domain Search Made Easy: Find Your Perfect Domain | Dynadot"
+    },
+    "porkbun": {
+      "name": "Porkbun",
+      "status": "ok",
+      "httpStatus": 200,
+      "ms": 2424,
+      "finalUrl": "https://porkbun.com/checkout/search?q=ai-group.com",
+      "title": "porkbun.com | Domain Search Results for ai-group.com"
+    },
+    "hover": {
+      "name": "Hover",
+      "status": "ok",
+      "httpStatus": 200,
+      "ms": 1443,
+      "finalUrl": "https://www.hover.com/domains/results?q=ai-group.com",
+      "title": "Domain name search results - Hover"
+    },
+    "squarespace": {
+      "name": "Squarespace",
+      "status": "ok",
+      "httpStatus": 200,
+      "ms": 615,
+      "finalUrl": "https://domains.squarespace.com/search?query=ai-group.com",
+      "title": "Squarespace Domains"
+    },
+    "ionos": {
+      "name": "IONOS",
+      "status": "ok",
+      "httpStatus": 200,
+      "ms": 1754,
+      "finalUrl": "https://www.ionos.com/domains/domain-names",
+      "title": "Buy Domain Names » Register Your TLD » Starting at $0.88"
+    },
+    "dreamhost": {
+      "name": "DreamHost",
+      "status": "ok",
+      "httpStatus": 200,
+      "ms": 516,
+      "finalUrl": "https://www.dreamhost.com/domains/?domain=ai-group.com",
+      "title": "Domain Names - Find Your Perfect Domain Name - DreamHost"
+    }
+  }
+}

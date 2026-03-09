@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-03-09T10:21:04.567Z",
+  "testDomain": "ai-group.com",
+  "summary": {
+    "open": 7,
+    "botBlocked": 4,
+    "loginRequired": 1,
+    "total": 11
+  },
+  "registrars": {
+    "cloudflare": {
+      "name": "Cloudflare",
+      "url": "https://dash.cloudflare.com/?to=/:account/domains/register/ai-group.com",
+      "behavior": "login-required",
+      "httpStatus": 200,
+      "ms": 401,
+      "tldCount": 14,
+      "browserVerified": "2026-03-09",
+      "note": null
+    },
+    "spaceship": {
+      "name": "Spaceship",
+      "url": "https://www.spaceship.com/domain/search/?query=ai-group.com",
+      "behavior": "bot-blocked-404",
+      "httpStatus": 404,
+      "ms": 498,
+      "tldCount": 20,
+      "browserVerified": "2026-03-09",
+      "note": null
+    },
+    "dynadot": {
+      "name": "Dynadot",
+      "url": "https://www.dynadot.com/domain/search?domain=ai-group.com",
+      "behavior": "open",
+      "httpStatus": 200,
+      "ms": 1569,
+      "tldCount": 21,
+      "browserVerified": "2026-03-09",
+      "note": null
+    },
+    "porkbun": {
+      "name": "Porkbun",
+      "url": "https://porkbun.com/checkout/search?q=ai-group.com",
+      "behavior": "open",
+      "httpStatus": 200,
+      "ms": 1630,
+      "tldCount": 39,
+      "browserVerified": "2026-03-09",
+      "note": null
+    },
+    "namecheap": {
+      "name": "Namecheap",
+      "url": "https://www.namecheap.com/domains/registration/results/?domain=ai-group.com",
+      "behavior": "bot-blocked-404",
+      "httpStatus": 404,
+      "ms": 243,
+      "tldCount": 26,
+      "browserVerified": "2026-03-09",
+      "note": "Does NOT support .co.il domains"
+    },
+    "godaddy": {
+      "name": "GoDaddy",
+      "url": "https://www.godaddy.com/domainsearch/find?checkAvail=1&domainToCheck=ai-group.com",
+      "behavior": "bot-blocked-403",
+      "httpStatus": 403,
+      "ms": 118,
+      "tldCount": 19,
+      "browserVerified": "2026-03-09",
+      "note": "Also handles .co.il domains! Verified $79.99/yr"
+    },
+    "hover": {
+      "name": "Hover",
+      "url": "https://www.hover.com/domains/results?q=ai-group.com",
+      "behavior": "open",
+      "httpStatus": 200,
+      "ms": 1293,
+      "tldCount": 9,
+      "browserVerified": "2026-03-09",
+      "note": "Old URL /domain-search?q= is BROKEN — use /domains/results?q="
+    },
+    "squarespace": {
+      "name": "Squarespace",
+      "url": "https://domains.squarespace.com/search?query=ai-group.com",
+      "behavior": "bot-blocked-403",
+      "httpStatus": 403,
+      "ms": 214,
+      "tldCount": 8,
+      "browserVerified": "2026-03-09",
+      "note": "Replaced Google Domains (shut down July 2024, migrated to Squarespace)"
+    },
+    "ionos": {
+      "name": "IONOS",
+      "url": "https://www.ionos.com/domains/domain-names",
+      "behavior": "open",
+      "httpStatus": 200,
+      "ms": 685,
+      "tldCount": 16,
+      "browserVerified": "2026-03-09",
+      "note": "JS-based search form — no query param support. Links to main domain page. First-year promo prices!"
+    },
+    "dreamhost": {
+      "name": "DreamHost",
+      "url": "https://www.dreamhost.com/domains/?domain=ai-group.com",
+      "behavior": "open",
+      "httpStatus": 200,
+      "ms": 220,
+      "tldCount": 13,
+      "browserVerified": "2026-03-09",
+      "note": null
+    },
+    "gandi": {
+      "name": "Gandi",
+      "url": "https://shop.gandi.net/en/domain/suggest?search=ai-group.com",
+      "behavior": "bot-blocked-500",
+      "httpStatus": 302,
+      "ms": 233,
+      "tldCount": 17,
+      "browserVerified": "2026-03-09",
+      "note": "European registrar. Server returns 500 to non-browser requests but works in real browser."
+    }
+  }
+}
