@@ -126,6 +126,25 @@ app.get('/api/prices', async (req, res) => {
   }
 });
 
+// ── API: Smart alternatives when domain is taken ──
+app.get('/api/alternatives', async (req, res) => {
+  try {
+    const { domain } = req.query;
+    if (!domain) return res.status(400).json({ error: 'domain parameter required' });
+    
+    const cacheKey = `alts:${domain}`;
+    const cached = dnsCache.get(cacheKey);
+    if (cached) return res.json(cached);
+
+    const { generateAlternatives } = require('./services');
+    const result = await generateAlternatives(domain);
+    dnsCache.set(cacheKey, result);
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // SPA fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

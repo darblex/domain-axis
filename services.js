@@ -358,4 +358,97 @@ async function fetchPrices(domain, tld) {
   };
 }
 
-module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices };
+// ═══════════════════════════════════════
+// Smart Alternatives Generator
+// ═══════════════════════════════════════
+async function generateAlternatives(domain) {
+  const parts = domain.split('.');
+  const name = parts[0];
+  const originalTld = parts.slice(1).join('.');
+
+  // 1. Alternative TLDs
+  const altTlds = ['com','net','org','io','co','dev','app','me','xyz','info','tech','cc','us','uk','de','eu','biz','pro','online','site','store','live','world','tv']
+    .filter(t => t !== originalTld);
+
+  // 2. Name variations
+  const variations = generateNameVariations(name);
+
+  // 3. Build candidate list: alt TLDs first, then variations
+  const tldCandidates = altTlds.map(tld => `${name}.${tld}`);
+  const varTlds = ['com','net','org','io','dev','co','app'];
+  const varCandidates = [];
+  for (const v of variations) {
+    for (const tld of varTlds) {
+      const d = `${v}.${tld}`;
+      if (d !== domain && !tldCandidates.includes(d)) {
+        varCandidates.push(d);
+      }
+    }
+  }
+
+  const allCandidates = [...tldCandidates, ...varCandidates.slice(0, 35)];
+  
+  // Check availability in batches
+  const batchSize = 15;
+  const available = [];
+  
+  for (let i = 0; i < allCandidates.length && available.length < 20; i += batchSize) {
+    const batch = allCandidates.slice(i, i + batchSize);
+    const results = await Promise.allSettled(
+      batch.map(async d => {
+        const check = await checkDNS(d);
+        return { domain: d, available: check.available };
+      })
+    );
+    for (const r of results) {
+      if (r.status === 'fulfilled' && r.value.available === true) {
+        available.push(r.value.domain);
+      }
+    }
+  }
+
+  // Attach Cloudflare price hints
+  const alternatives = available.slice(0, 15).map(d => {
+    const tld = d.split('.').slice(1).join('.');
+    const cfPrice = CLOUDFLARE_PRICES[tld];
+    return {
+      domain: d,
+      tld,
+      cheapestPrice: cfPrice?.reg || null,
+      cheapestRegistrar: cfPrice ? 'Cloudflare' : null,
+      type: d.startsWith(name + '.') ? 'tld' : 'variation'
+    };
+  }).sort((a, b) => {
+    if (a.type !== b.type) return a.type === 'tld' ? -1 : 1;
+    return (a.cheapestPrice || 999) - (b.cheapestPrice || 999);
+  });
+
+  return {
+    originalDomain: domain,
+    alternatives,
+    total: alternatives.length,
+    checkedAt: new Date().toISOString()
+  };
+}
+
+function generateNameVariations(name) {
+  const variations = new Set();
+  const prefixes = ['get','try','use','my','the','go','hey'];
+  prefixes.forEach(p => variations.add(p + name));
+  const suffixes = ['app','hq','hub','lab','now','pro','dev','ai','go','up'];
+  suffixes.forEach(s => variations.add(name + s));
+  if (name.length > 4) {
+    const mid = Math.floor(name.length / 2);
+    variations.add(name.slice(0, mid) + '-' + name.slice(mid));
+  }
+  for (let i = 0; i < name.length - 1; i++) {
+    if (name[i] === name[i + 1]) {
+      variations.add(name.slice(0, i) + name.slice(i + 1));
+    }
+  }
+  const noVowels = name.replace(/[aeiou]/gi, '');
+  if (noVowels.length >= 3 && noVowels !== name) variations.add(noVowels);
+  return [...variations].slice(0, 15);
+}
+
+module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives };

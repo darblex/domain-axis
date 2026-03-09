@@ -314,6 +314,64 @@
     .empty .icon { font-size: 3rem; margin-bottom: 1rem; }
     .empty h2 { font-size: 1.3rem; color: var(--text); margin-bottom: .5rem; }
 
+    /* ── Alternatives ── */
+    .alt-section {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .alt-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+    .alt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: .8rem;
+    }
+    .alt-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .8rem 1rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all .2s;
+    }
+    .alt-card:hover { border-color: var(--green); transform: translateY(-1px); }
+    .alt-card .alt-domain {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    .alt-card .alt-domain .alt-name { color: var(--text); }
+    .alt-card .alt-domain .alt-tld { color: var(--accent); }
+    .alt-card .alt-price { color: var(--green); font-weight: 600; font-size: .9rem; }
+    .alt-card .alt-badge {
+      font-size: .7rem;
+      padding: .1rem .4rem;
+      border-radius: 4px;
+      background: rgba(139,92,246,.15);
+      color: var(--accent2);
+      margin-left: .5rem;
+    }
+    .alt-card .alt-actions { display: flex; align-items: center; gap: .5rem; }
+    .alt-card .alt-check {
+      padding: .3rem .6rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .alt-card .alt-check:hover { opacity: .85; }
+
     /* ── Footer ── */
     .footer {
       text-align: center;
@@ -358,6 +416,7 @@
 
   <div id="results" style="display:none">
     <div id="availBanner" class="avail-banner" style="max-width:1100px;margin:0 auto 1rem;display:none"></div>
+    <div id="alternativesSection" style="max-width:1100px;margin:0 auto 1.5rem;display:none"></div>
     
     <div class="tabs">
       <div class="tab active" onclick="switchTab('prices')" data-tab="prices">💰 <span data-i18n="tab_prices">Prices</span></div>
@@ -427,6 +486,14 @@ const i18n = {
     free: 'Free',
     best_deal: 'Best Deal',
     no_prices: 'No prices found for this TLD. Try a different extension.',
+    alt_searching: 'Searching for available alternatives...',
+    alt_title: 'Available Alternatives',
+    alt_found: 'available',
+    alt_none: 'No alternatives found. Try a different name.',
+    alt_tld_label: '🌐 Same name, different extension:',
+    alt_var_label: '✨ Creative variations:',
+    alt_creative: 'creative',
+    alt_check: 'Check',
   },
   he: {
     tagline: 'פלטפורמת חיפוש דומיינים חינמית',
@@ -448,6 +515,14 @@ const i18n = {
     free: 'חינם',
     best_deal: 'הכי משתלם',
     no_prices: 'לא נמצאו מחירים עבור סיומת זו. נסה סיומת אחרת.',
+    alt_searching: 'מחפש אלטרנטיבות פנויות...',
+    alt_title: 'אלטרנטיבות פנויות',
+    alt_found: 'פנויים',
+    alt_none: 'לא נמצאו אלטרנטיבות. נסה שם אחר.',
+    alt_tld_label: '🌐 אותו שם, סיומת אחרת:',
+    alt_var_label: '✨ וריאציות יצירתיות:',
+    alt_creative: 'יצירתי',
+    alt_check: 'בדוק',
   }
 };
 
@@ -537,6 +612,9 @@ function showLoading(id) {
 
 async function checkAvailability(domain) {
   const banner = document.getElementById('availBanner');
+  const altSection = document.getElementById('alternativesSection');
+  altSection.style.display = 'none';
+  
   try {
     const resp = await fetch(`${API}/api/check?domain=${domain}`);
     const data = await resp.json();
@@ -547,6 +625,8 @@ async function checkAvailability(domain) {
     } else if (data.available === false) {
       banner.className = 'avail-banner taken';
       banner.textContent = t('taken').replace('{domain}', domain);
+      // Fetch alternatives when taken!
+      fetchAlternatives(domain);
     } else {
       banner.className = 'avail-banner unknown';
       banner.textContent = t('unknown').replace('{domain}', domain);
@@ -555,6 +635,74 @@ async function checkAvailability(domain) {
   } catch {
     banner.style.display = 'none';
   }
+}
+
+async function fetchAlternatives(domain) {
+  const altSection = document.getElementById('alternativesSection');
+  altSection.style.display = 'block';
+  altSection.innerHTML = `<div class="alt-section">
+    <h3>💡 ${t('alt_searching')}</h3>
+    <div class="loading-overlay" style="padding:1rem"><div class="spinner"></div></div>
+  </div>`;
+  
+  try {
+    const resp = await fetch(`${API}/api/alternatives?domain=${domain}`);
+    const data = await resp.json();
+    
+    if (!data.alternatives || data.alternatives.length === 0) {
+      altSection.innerHTML = `<div class="alt-section"><h3>💡 ${t('alt_title')}</h3><p style="color:var(--text2)">${t('alt_none')}</p></div>`;
+      return;
+    }
+    
+    const tldAlts = data.alternatives.filter(a => a.type === 'tld');
+    const varAlts = data.alternatives.filter(a => a.type === 'variation');
+    
+    let html = `<div class="alt-section"><h3>💡 ${t('alt_title')} (${data.total} ${t('alt_found')})</h3>`;
+    
+    if (tldAlts.length > 0) {
+      html += `<p style="color:var(--text2);margin-bottom:.8rem;font-size:.9rem">${t('alt_tld_label')}</p>`;
+      html += `<div class="alt-grid">`;
+      tldAlts.forEach(a => {
+        const namePart = a.domain.split('.')[0];
+        html += buildAltCard(a, namePart);
+      });
+      html += `</div>`;
+    }
+    
+    if (varAlts.length > 0) {
+      html += `<p style="color:var(--text2);margin:.8rem 0;font-size:.9rem">${t('alt_var_label')}</p>`;
+      html += `<div class="alt-grid">`;
+      varAlts.forEach(a => {
+        const namePart = a.domain.split('.')[0];
+        html += buildAltCard(a, namePart);
+      });
+      html += `</div>`;
+    }
+    
+    html += `</div>`;
+    altSection.innerHTML = html;
+  } catch (e) {
+    altSection.innerHTML = `<div class="alt-section"><h3>💡 ${t('alt_title')}</h3><p style="color:var(--red)">Error: ${e.message}</p></div>`;
+  }
+}
+
+function buildAltCard(alt, namePart) {
+  const price = alt.cheapestPrice ? `$${alt.cheapestPrice.toFixed(2)}` : '';
+  const badge = alt.type === 'variation' ? `<span class="alt-badge">${t('alt_creative')}</span>` : '';
+  return `<div class="alt-card">
+    <div class="alt-domain">
+      <span class="alt-name">${namePart}</span><span class="alt-tld">.${alt.tld}</span>${badge}
+    </div>
+    <div class="alt-actions">
+      ${price ? `<span class="alt-price">from ${price}</span>` : ''}
+      <button class="alt-check" onclick="searchDomain('${alt.domain}')">${t('alt_check')}</button>
+    </div>
+  </div>`;
+}
+
+function searchDomain(domain) {
+  document.getElementById('searchInput').value = domain;
+  doSearch();
 }
 
 async function fetchPrices(domain) {
