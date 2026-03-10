@@ -7,6 +7,7 @@
   <meta name="description" content="Find the cheapest domain prices across 50+ registrars. AI-powered domain search, WHOIS lookup, DNS records, and SSL certificate info — all free.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌐</text></svg>">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Assistant:wght@400;600;700&display=swap');
     :root {
       --bg: #0a0e17;
       --bg2: #111827;
@@ -23,6 +24,7 @@
       --orange: #f97316;
       --radius: 12px;
       --shadow: 0 4px 20px rgba(0,0,0,0.3);
+      --glass: rgba(255,255,255,0.04);
     }
     .light {
       --bg: #f8fafc;
@@ -36,7 +38,7 @@
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Inter','Assistant', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -82,6 +84,18 @@
     }
     .controls button:hover { border-color: var(--accent); }
 
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .4rem .8rem;
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: .85rem;
+      color: var(--text2);
+    }
+
     /* ── Search ── */
     .search-box {
       max-width: 700px;
@@ -90,12 +104,33 @@
     }
     .search-wrap {
       display: flex;
-      background: var(--bg2);
+      background: linear-gradient(135deg, rgba(59,130,246,.08), rgba(139,92,246,.05));
       border: 2px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      transition: border-color .3s;
+      transition: border-color .3s, box-shadow .3s;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.25);
     }
+    .helper-chips {
+      max-width: 700px;
+      margin: .6rem auto 0;
+      padding: 0 1rem;
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .helper-chips button {
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text);
+      padding: .4rem .8rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: all .2s;
+    }
+    .helper-chips button:hover { border-color: var(--accent); color: var(--accent); }
     .search-wrap:focus-within { border-color: var(--accent); }
     .search-wrap input {
       flex: 1;
@@ -166,6 +201,38 @@
     .avail-banner.available { background: rgba(16,185,129,.15); color: var(--green); }
     .avail-banner.taken { background: rgba(239,68,68,.15); color: var(--red); }
     .avail-banner.unknown { background: rgba(245,158,11,.15); color: var(--yellow); }
+
+    /* ── Result Summary ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: .8rem;
+      margin: 0 auto 1rem;
+    }
+    .summary-card {
+      padding: 1rem 1.1rem;
+      background: linear-gradient(135deg, rgba(59,130,246,.12), rgba(139,92,246,.1));
+      border: 1px solid rgba(59,130,246,.25);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .summary-title { font-size: .85rem; color: var(--text2); text-transform: uppercase; letter-spacing: .4px; }
+    .summary-value { font-size: 1.3rem; font-weight: 800; margin: .15rem 0; }
+    .summary-sub { color: var(--text2); font-size: .9rem; }
+    .score-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .2rem .45rem;
+      background: rgba(16,185,129,.12);
+      border: 1px solid rgba(16,185,129,.4);
+      border-radius: 10px;
+      font-weight: 700;
+      color: var(--green);
+      font-size: .85rem;
+    }
+    .score-bar-wrap { width: 100%; background: var(--bg3); border-radius: 6px; overflow: hidden; height: 8px; margin-top: .3rem; }
+    .score-bar { height: 8px; background: linear-gradient(90deg, var(--green), var(--accent)); }
 
     /* ── Price Table ── */
     .price-table {
@@ -570,6 +637,43 @@
     }
     .alt-card .alt-check:hover { opacity: .85; }
 
+    /* ── Trust / Info Sections ── */
+    .info-section {
+      max-width: 1100px;
+      margin: 0 auto 2rem;
+      padding: 0 1rem;
+    }
+    .info-section h3 {
+      font-size: 1.2rem;
+      margin-bottom: .8rem;
+    }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: .8rem;
+    }
+    .why-card {
+      padding: 1rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .why-card .title { font-weight: 700; margin-bottom: .2rem; }
+    .why-card .desc { color: var(--text2); font-size: .9rem; }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: .7rem;
+      margin-top: .6rem;
+    }
+    .step-card {
+      padding: 1rem;
+      background: var(--bg3);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
     /* ── Footer ── */
     .footer {
       text-align: center;
@@ -610,10 +714,18 @@
       <input type="text" id="searchInput" placeholder="Search any name or domain... (e.g. coolstartup or coolstartup.com)" data-i18n-placeholder="search_placeholder" autofocus>
       <button onclick="doSearch()" data-i18n="search">Search</button>
     </div>
+    <div class="helper-chips">
+      <button onclick="quickFill('awesome.com')">.com</button>
+      <button onclick="quickFill('startup.ai')">.ai</button>
+      <button onclick="quickFill('brand.co.il')">.co.il</button>
+      <button onclick="quickFill('nextgen')">🔭 סריקה בלי סיומת</button>
+      <button onclick="scrollToAi()">🤖 AI</button>
+    </div>
   </div>
 
   <div id="results" style="display:none">
     <div id="availBanner" class="avail-banner" style="max-width:1100px;margin:0 auto 1rem;display:none"></div>
+    <div id="resultSummary" style="max-width:1100px;margin:0 auto 1rem;display:none"></div>
     <div id="alternativesSection" style="max-width:1100px;margin:0 auto 1.5rem;display:none"></div>
     
     <div class="tabs">
@@ -673,6 +785,24 @@
         <div class="loading-overlay" style="padding:1rem"><div class="spinner"></div></div>
       </div>
     </div>
+
+    <div class="info-section">
+      <h3>🧭 Why Domain Axis?</h3>
+      <div class="why-grid">
+        <div class="why-card"><div class="title">Price Intelligence</div><div class="desc">Live comparisons across dozens of registrars with 3-year cost lens.</div></div>
+        <div class="why-card"><div class="title">Instant Domain Signals</div><div class="desc">Availability, WHOIS, DNS, SSL in one sweep — no tab hopping.</div></div>
+        <div class="why-card"><div class="title">AI Assist</div><div class="desc">Name ideas + scan-ready chips so you can go from idea to checkout fast.</div></div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h3>📈 How it works</h3>
+      <div class="steps">
+        <div class="step-card">1) Enter a name (no dot for multi-TLD scan)</div>
+        <div class="step-card">2) We fetch availability, prices, WHOIS, DNS, SSL</div>
+        <div class="step-card">3) Pick the best deal or jump to alternatives</div>
+      </div>
+    </div>
   </div>
 
   <div class="footer">
@@ -685,6 +815,7 @@ const API = window.location.origin;
 let currentDomain = '';
 let lang = 'en';
 let priceData = null;
+let availabilityStatus = null;
 
 const i18n = {
   en: {
@@ -849,6 +980,16 @@ function toggleTheme() {
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 
+function quickFill(value) {
+  document.getElementById('searchInput').value = value;
+  doSearch();
+}
+
+function scrollToAi() {
+  document.getElementById('aiInput').focus();
+  document.getElementById('aiInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 // Init theme
 if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light');
@@ -864,6 +1005,7 @@ document.getElementById('searchInput').addEventListener('keydown', e => {
 async function doSearch() {
   let input = document.getElementById('searchInput').value.trim().toLowerCase();
   if (!input) return;
+  availabilityStatus = null;
   
   // Clean up
   input = input.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '');
@@ -877,6 +1019,7 @@ async function doSearch() {
     document.getElementById('results').style.display = 'block';
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('availBanner').style.display = 'none';
+    document.getElementById('resultSummary').style.display = 'none';
     document.getElementById('alternativesSection').style.display = 'none';
     
     // Hide tabs, show scan panel
@@ -910,6 +1053,7 @@ async function doSearch() {
   document.getElementById('results').style.display = 'block';
   document.getElementById('emptyState').style.display = 'none';
   document.querySelector('.tabs').style.display = 'flex';
+  document.getElementById('resultSummary').style.display = 'none';
   
   switchTab('prices');
   showLoading('priceContent');
@@ -1008,6 +1152,62 @@ function showLoading(id) {
     </div>`;
 }
 
+function formatPrice(val) {
+  if (val === null || val === undefined) return '—';
+  return `$${parseFloat(val).toFixed(2)}`;
+}
+
+function computeAxisScores(registrars) {
+  if (!registrars || !registrars.length) return [];
+  const costs = registrars.map(r => r.score3y || (r.regPrice + (r.renewalPrice || r.regPrice) * 2));
+  const minCost = Math.min(...costs);
+  const maxCost = Math.max(...costs);
+  const range = maxCost - minCost || 1;
+  return registrars.map(r => {
+    const cost3y = r.score3y || (r.regPrice + (r.renewalPrice || r.regPrice) * 2);
+    let score = 95 - ((cost3y - minCost) / range) * 55;
+    if (r.whoisPrivacyFree) score += 3;
+    if (r.promoCode) score += 2;
+    score = Math.max(40, Math.min(99, Math.round(score)));
+    return { ...r, axisScore: score };
+  });
+}
+
+function renderResultSummary(data) {
+  const wrap = document.getElementById('resultSummary');
+  if (!data || !data.registrars || !data.registrars.length) { wrap.style.display = 'none'; return; }
+  const registrars = data.registrars;
+  const bestReg = registrars[0];
+  const best3y = [...registrars].sort((a, b) => (a.score3y || 99999) - (b.score3y || 99999))[0];
+  const privacy = registrars.find(r => r.whoisPrivacyFree);
+  const avgReg = registrars.reduce((s, r) => s + r.regPrice, 0) / registrars.length;
+  const summaryHtml = `
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-title">Best deal</div>
+        <div class="summary-value">${bestReg.registrar}</div>
+        <div class="summary-sub">${formatPrice(bestReg.regPrice)} · ${bestReg.whoisPrivacyFree ? 'Privacy incl.' : 'Privacy extra'} · Axis ${bestReg.axisScore || '--'}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Lowest 3yr cost</div>
+        <div class="summary-value">${best3y ? best3y.registrar : '—'}</div>
+        <div class="summary-sub">${best3y ? formatPrice(best3y.score3y) : '—'} over 3y</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Privacy friendly</div>
+        <div class="summary-value">${privacy ? privacy.registrar : 'Mixed'}</div>
+        <div class="summary-sub">${privacy ? 'Free WHOIS privacy' : 'Some registrars charge'}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Market snapshot</div>
+        <div class="summary-value">${registrars.length} registrars</div>
+        <div class="summary-sub">Avg reg ${formatPrice(avgReg)} · Availability: ${availabilityLabel(availabilityStatus)}</div>
+      </div>
+    </div>`;
+  wrap.innerHTML = summaryHtml;
+  wrap.style.display = 'block';
+}
+
 async function checkAvailability(domain) {
   const banner = document.getElementById('availBanner');
   const altSection = document.getElementById('alternativesSection');
@@ -1017,6 +1217,7 @@ async function checkAvailability(domain) {
     const resp = await fetch(`${API}/api/check?domain=${domain}`);
     const data = await resp.json();
     
+    availabilityStatus = data.available;
     if (data.available === true) {
       banner.className = 'avail-banner available';
       banner.textContent = t('available').replace('{domain}', domain);
@@ -1107,6 +1308,7 @@ async function fetchPrices(domain) {
   try {
     const resp = await fetch(`${API}/api/prices?domain=${domain}`);
     const data = await resp.json();
+    data.registrars = computeAxisScores(data.registrars || []);
     priceData = data;
     renderPrices(data);
   } catch (e) {
@@ -1118,10 +1320,16 @@ function renderPrices(data) {
   const el = document.getElementById('priceContent');
   if (!data.registrars || data.registrars.length === 0) {
     el.innerHTML = `<div class="empty"><div class="icon">💸</div><p>${t('no_prices')}</p></div>`;
+    renderResultSummary(null);
     return;
   }
-  
-  let html = `<div style="margin-bottom:1rem;color:var(--text2);font-size:.9rem;">${data.total} registrars found for .${data.tld}</div>`;
+
+  renderResultSummary(data);
+  let html = `<div style="margin-bottom:.6rem;color:var(--text2);font-size:.9rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;">` +
+    `<span class="pill">${data.total} registrars · .${data.tld}</span>` +
+    `<span class="pill">Best: ${formatPrice(data.registrars[0].regPrice)}</span>` +
+    `<span class="pill">Avg reg: ${formatPrice(data.registrars.reduce((s,r)=>s+r.regPrice,0)/data.registrars.length)}</span>` +
+    `</div>`;
   html += `<div style="overflow-x:auto;"><table class="price-table">
     <thead><tr>
       <th>#</th>
@@ -1131,6 +1339,7 @@ function renderPrices(data) {
       <th class="hide-mobile" onclick="sortPrices('transferPrice')">${t('transfer')} ↕</th>
       <th class="hide-mobile">${t('whois_priv')}</th>
       <th class="hide-mobile" onclick="sortPrices('score3y')">${t('score_3y')} ↕</th>
+      <th onclick="sortPrices('axisScore')">Axis Score ↕</th>
       <th></th>
     </tr></thead><tbody>`;
   
@@ -1139,15 +1348,17 @@ function renderPrices(data) {
     const promo = r.promoCode ? ` <span class="badge badge-yellow">${r.promoCode}</span>` : '';
     const whois = r.whoisPrivacyFree ? `<span class="badge badge-green">${t('free')}</span>` : '—';
     const bestBadge = isBest ? ` <span class="badge badge-blue">${t('best_deal')}</span>` : '';
+    const scoreBar = `<div class="score-chip">${r.axisScore || '--'}</div><div class="score-bar-wrap"><div class="score-bar" style="width:${Math.min(100, r.axisScore || 0)}%"></div></div>`;
     
     html += `<tr class="${isBest ? 'best' : ''}">
       <td>${i + 1}</td>
       <td><strong>${r.registrar}</strong>${bestBadge}${promo}</td>
-      <td><strong>$${r.regPrice.toFixed(2)}</strong></td>
+      <td><strong>${formatPrice(r.regPrice)}</strong></td>
       <td>${r.renewalPrice ? '$' + r.renewalPrice.toFixed(2) : '—'}</td>
       <td class="hide-mobile">${r.transferPrice ? '$' + r.transferPrice.toFixed(2) : '—'}</td>
       <td class="hide-mobile">${whois}</td>
       <td class="hide-mobile">${r.score3y ? '$' + r.score3y.toFixed(2) : '—'}</td>
+      <td>${scoreBar}</td>
       <td><a href="${r.purchaseUrl}" target="_blank" class="buy-link">${t('buy')}</a></td>
     </tr>`;
   });
@@ -1158,7 +1369,10 @@ function renderPrices(data) {
 
 function sortPrices(field) {
   if (!priceData) return;
-  priceData.registrars.sort((a, b) => (a[field] || 9999) - (b[field] || 9999));
+  priceData.registrars.sort((a, b) => {
+    if (field === 'axisScore') return (b[field] || 0) - (a[field] || 0);
+    return (a[field] || 9999) - (b[field] || 9999);
+  });
   renderPrices(priceData);
 }
 
