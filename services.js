@@ -293,7 +293,7 @@ function buildUnpricedRegistrars(domain, priced) {
       if (!name || names.has(name.toLowerCase())) continue;
       const behavior = info.behavior || 'unknown';
       const note = info.note || registrarVerification?.results?.[name.toLowerCase()]?.note || null;
-      const purchaseUrl = info.url?.replace(/ai-group\\.com/gi, domain) || registrarPurchaseUrl(name, domain);
+      const purchaseUrl = info.url?.replace(/ai-group\.com/gi, domain) || registrarPurchaseUrl(name, domain);
       extras.push({
         registrar: name,
         purchaseUrl,
