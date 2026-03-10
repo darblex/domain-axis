@@ -280,7 +280,19 @@
     .badge-green { background: rgba(16,185,129,.15); color: var(--green); }
     .badge-blue { background: rgba(59,130,246,.15); color: var(--accent); }
     .badge-yellow { background: rgba(245,158,11,.15); color: var(--yellow); }
-    .buy-link {
+        .badge-gray { background: rgba(148,163,184,.18); color: var(--text2); }
+    .confidence-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:.35rem; }
+    .conf-verified { background: var(--green); }
+    .conf-estimated { background: var(--accent); }
+    .conf-promo { background: var(--orange); }
+    .conf-unverified { background: var(--border); }
+    .legend { display:flex; gap:.6rem; flex-wrap:wrap; font-size:.85rem; color:var(--text2); margin:.3rem 0 .8rem; }
+    .legend-item { display:flex; align-items:center; gap:.35rem; padding:.35rem .55rem; background: var(--bg3); border:1px solid var(--border); border-radius:8px; }
+    .unpriced-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:.5rem; margin-top:.5rem; }
+    .unpriced-card { padding:.7rem .8rem; background: var(--bg3); border:1px dashed var(--border); border-radius:8px; }
+    .unpriced-card strong { display:block; }
+    .unpriced-meta { font-size:.85rem; color: var(--text2); }
+.buy-link {
       padding: .3rem .8rem;
       background: var(--accent);
       color: white !important;
@@ -1167,10 +1179,61 @@ function computeAxisScores(registrars) {
     const cost3y = r.score3y || (r.regPrice + (r.renewalPrice || r.regPrice) * 2);
     let score = 95 - ((cost3y - minCost) / range) * 55;
     if (r.whoisPrivacyFree) score += 3;
-    if (r.promoCode) score += 2;
-    score = Math.max(40, Math.min(99, Math.round(score)));
+    if (r.promoCode) score += 1;
+    if (typeof r.confidence === 'number') {
+      score += Math.round((r.confidence - 0.6) * 30);
+      if (r.confidenceLabel === 'promo') score -= 4;
+      if (r.confidenceLabel === 'unverified') score -= 6;
+    }
+    score = Math.max(35, Math.min(99, Math.round(score)));
     return { ...r, axisScore: score };
   });
+}
+
+
+function confidenceBadge(r) {
+  const label = r.confidenceLabel || 'unverified';
+  const human = { verified: 'Verified', estimated: 'Estimated', promo: 'Promo / first-year', unverified: 'Unverified' }[label] || label;
+  const badgeClass = label === 'verified' ? 'badge-green' : label === 'estimated' ? 'badge-blue' : label === 'promo' ? 'badge-yellow' : 'badge-gray';
+  const confPct = r.confidence ? ` · ${(r.confidence * 100).toFixed(0)}%` : '';
+  const reason = r.confidenceReason ? ` title="${escapeHtml(r.confidenceReason)}"` : '';
+  return `<span class="badge ${badgeClass}"${reason}>${human}${confPct}</span>`;
+}
+
+function confidenceLegendHtml(legend) {
+  const data = legend || {
+    verified: 'Hard verified or fixed-price sources',
+    estimated: 'Catalog-scraped pricing (not checkout)',
+    promo: 'Likely first-year promo',
+    unverified: 'Not verified; check cart'
+  };
+  return `<div class="legend">`
+    + `<div class="legend-item"><span class="confidence-dot conf-verified"></span>${escapeHtml(data.verified || 'Verified')}</div>`
+    + `<div class="legend-item"><span class="confidence-dot conf-estimated"></span>${escapeHtml(data.estimated || 'Estimated')}</div>`
+    + `<div class="legend-item"><span class="confidence-dot conf-promo"></span>${escapeHtml(data.promo || 'Promo/1st yr')}</div>`
+    + `<div class="legend-item"><span class="confidence-dot conf-unverified"></span>${escapeHtml(data.unverified || 'Unverified')}</div>`
+    + `</div>`;
+}
+
+function renderUnpricedCards(list) {
+  if (!list || !list.length) return '';
+  let html = `<div class="info-card" style="margin-top:1rem;">`;
+  html += `<h3 style="margin-bottom:.4rem;">More registrars to check manually (${list.length})</h3>`;
+  html += `<p class="unpriced-meta">Links are reachable but pricing wasn't scraped. Expect promos/geo differences.</p>`;
+  html += `<div class="unpriced-grid">`;
+  list.forEach(r => {
+    const behavior = r.behavior ? r.behavior.replace(/-/g, ' ') : 'unknown';
+    const note = r.note ? `<div class="unpriced-meta">${escapeHtml(r.note)}</div>` : '';
+    const confidence = r.confidence ? ` · ${(r.confidence * 100).toFixed(0)}% confidence` : '';
+    html += `<div class="unpriced-card">`
+      + `<strong>${escapeHtml(r.registrar)}</strong>`
+      + `<div class="unpriced-meta">Behavior: ${escapeHtml(behavior)}${confidence}</div>`
+      + `${note}`
+      + `<div style="margin-top:.4rem;"><a href="${r.purchaseUrl}" target="_blank" class="buy-link">Open</a></div>`
+      + `</div>`;
+  });
+  html += `</div></div>`;
+  return html;
 }
 
 function renderResultSummary(data) {
@@ -1325,15 +1388,20 @@ function renderPrices(data) {
   }
 
   renderResultSummary(data);
+  const unpricedCount = data.unpricedRegistrars?.length || 0;
   let html = `<div style="margin-bottom:.6rem;color:var(--text2);font-size:.9rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;">` +
     `<span class="pill">${data.total} registrars · .${data.tld}</span>` +
     `<span class="pill">Best: ${formatPrice(data.registrars[0].regPrice)}</span>` +
     `<span class="pill">Avg reg: ${formatPrice(data.registrars.reduce((s,r)=>s+r.regPrice,0)/data.registrars.length)}</span>` +
+    (unpricedCount ? `<span class="pill">+${unpricedCount} manual-check sites</span>` : '') +
     `</div>`;
+
+  html += confidenceLegendHtml(data.confidenceLegend);
   html += `<div style="overflow-x:auto;"><table class="price-table">
     <thead><tr>
       <th>#</th>
       <th>${t('registrar')}</th>
+      <th onclick="sortPrices('confidence')">Confidence ↕</th>
       <th onclick="sortPrices('regPrice')">${t('register')} ↕</th>
       <th onclick="sortPrices('renewalPrice')">${t('renewal')} ↕</th>
       <th class="hide-mobile" onclick="sortPrices('transferPrice')">${t('transfer')} ↕</th>
@@ -1349,10 +1417,13 @@ function renderPrices(data) {
     const whois = r.whoisPrivacyFree ? `<span class="badge badge-green">${t('free')}</span>` : '—';
     const bestBadge = isBest ? ` <span class="badge badge-blue">${t('best_deal')}</span>` : '';
     const scoreBar = `<div class="score-chip">${r.axisScore || '--'}</div><div class="score-bar-wrap"><div class="score-bar" style="width:${Math.min(100, r.axisScore || 0)}%"></div></div>`;
-    
+    const conf = confidenceBadge(r);
+    const source = r.source ? `<span class="badge badge-gray">${r.source}</span>` : '';
+    const reason = r.confidenceReason ? `<div class="unpriced-meta">${escapeHtml(r.confidenceReason)}</div>` : '';
     html += `<tr class="${isBest ? 'best' : ''}">
       <td>${i + 1}</td>
-      <td><strong>${r.registrar}</strong>${bestBadge}${promo}</td>
+      <td><strong>${r.registrar}</strong>${bestBadge}${promo}${source ? `<div class="unpriced-meta" style="margin-top:.25rem;">${source}</div>` : ''}</td>
+      <td>${conf}${reason}</td>
       <td><strong>${formatPrice(r.regPrice)}</strong></td>
       <td>${r.renewalPrice ? '$' + r.renewalPrice.toFixed(2) : '—'}</td>
       <td class="hide-mobile">${r.transferPrice ? '$' + r.transferPrice.toFixed(2) : '—'}</td>
@@ -1364,6 +1435,9 @@ function renderPrices(data) {
   });
   
   html += '</tbody></table></div>';
+  if (unpricedCount) {
+    html += renderUnpricedCards(data.unpricedRegistrars);
+  }
   el.innerHTML = html;
 }
 
@@ -1371,6 +1445,7 @@ function sortPrices(field) {
   if (!priceData) return;
   priceData.registrars.sort((a, b) => {
     if (field === 'axisScore') return (b[field] || 0) - (a[field] || 0);
+    if (field === 'confidence') return (b.confidence || 0) - (a.confidence || 0);
     return (a[field] || 9999) - (b[field] || 9999);
   });
   renderPrices(priceData);

@@ -1,6 +1,9 @@
 // ── Domain Axis Services ──
 const cheerio = require('cheerio');
 
+const linkVerification = require('./link-verification.json');
+const registrarVerification = require('./registrar-verification.json');
+
 // ═══════════════════════════════════════
 // DNS Availability Check (Google + Cloudflare)
 // ═══════════════════════════════════════
@@ -247,6 +250,65 @@ const CLOUDFLARE_PRICES = {
   biz: { reg: 10.11, renewal: 10.11 },
 };
 
+const CONFIDENCE_LEGEND = {
+  verified: 'Hard verified or fixed-price sources (Cloudflare at-cost).',
+  estimated: 'Catalog-scraped pricing; should be close but not checkout verified.',
+  promo: 'Likely first-year promo; renewal may be higher.',
+  unverified: 'Could not verify source. Treat as lead only.'
+};
+
+function annotateConfidence(entry) {
+  let confidence = entry.source === 'cloudflare' ? 0.95 : 0.64;
+  const reasons = [];
+  if (entry.source === 'cloudflare') reasons.push('Cloudflare publishes at-cost pricing.');
+  if (entry.source === 'tld-list') reasons.push('Scraped from tld-list.com catalog (not checkout).');
+  if (!entry.renewalPrice) { confidence -= 0.08; reasons.push('Renewal price missing'); }
+  if (entry.promoCode) { confidence -= 0.18; reasons.push('Promo/first-year pricing detected'); }
+  if (entry.regPrice && entry.renewalPrice && entry.regPrice < entry.renewalPrice * 0.6) {
+    confidence -= 0.12;
+    reasons.push('Registration far below renewal (likely promo)');
+  }
+  if (entry.regPrice && entry.regPrice < 3) {
+    confidence -= 0.1;
+    reasons.push('Sub- first year (high promo risk)');
+  }
+  confidence = Math.max(0.15, Math.min(0.99, confidence));
+  let label = 'unverified';
+  if (confidence >= 0.85) label = 'verified';
+  else if (confidence >= 0.6) label = 'estimated';
+  else if (confidence >= 0.4) label = 'promo';
+  entry.confidence = parseFloat(confidence.toFixed(2));
+  entry.confidenceLabel = label;
+  entry.confidenceReason = entry.confidenceReason || reasons.join('; ') || 'Catalog price; not checkout verified';
+  entry.sortScore = (entry.regPrice ?? 9999) + (1 - entry.confidence) * 8;
+  return entry;
+}
+
+function buildUnpricedRegistrars(domain, priced) {
+  const names = new Set(priced.map(r => r.registrar.toLowerCase()));
+  const extras = [];
+  if (linkVerification?.registrars) {
+    for (const info of Object.values(linkVerification.registrars)) {
+      const name = (info.name || '').trim();
+      if (!name || names.has(name.toLowerCase())) continue;
+      const behavior = info.behavior || 'unknown';
+      const note = info.note || registrarVerification?.results?.[name.toLowerCase()]?.note || null;
+      const purchaseUrl = info.url?.replace(/ai-group\\.com/gi, domain) || registrarPurchaseUrl(name, domain);
+      extras.push({
+        registrar: name,
+        purchaseUrl,
+        behavior,
+        note,
+        source: 'link-check',
+        confidence: behavior === 'open' ? 0.35 : 0.22,
+        confidenceLabel: 'unverified',
+        confidenceReason: 'Link reachable; price not scraped'
+      });
+    }
+  }
+  return extras;
+}
+
 function extractPrice(text) {
   const compact = text.replace(/,/g, '');
   const match = compact.match(/\$(\d+\.?\d*)/);
@@ -354,14 +416,20 @@ async function fetchPrices(domain, tld) {
     }
   }
 
-  // Sort by registration price
-  results.sort((a, b) => a.regPrice - b.regPrice);
+  // Apply confidence + coverage and sort by confidence-aware value
+  const annotated = results.map(annotateConfidence);
+  const unpricedRegistrars = buildUnpricedRegistrars(domain, annotated);
+
+  annotated.sort((a, b) => (a.sortScore ?? a.regPrice ?? 99999) - (b.sortScore ?? b.regPrice ?? 99999));
   
   return {
     domain,
     tld,
-    registrars: results,
-    total: results.length,
+    registrars: annotated,
+    unpricedRegistrars,
+    confidenceLegend: CONFIDENCE_LEGEND,
+    total: annotated.length,
+    coverageTotal: annotated.length + (unpricedRegistrars?.length || 0),
     cachedAt: new Date().toISOString()
   };
 }
@@ -751,3 +819,5 @@ async function getTrending() {
 }
 
 module.exports = { checkDNS, lookupRDAP, lookupDNSRecords, lookupSSL, fetchPrices, generateAlternatives, multiTldScan, aiSuggest, getTrending };
+
+
