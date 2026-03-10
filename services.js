@@ -345,7 +345,7 @@ async function fetchPrices(domain, tld) {
         renewalPrice: cfPrice.renewal,
         transferPrice: cfPrice.reg,
         currency: 'USD',
-        purchaseUrl: `https://dash.cloudflare.com/?to=/:account/domains/register/${domain.split('.')[0]}`,
+        purchaseUrl: `https://dash.cloudflare.com/?to=/:account/domains/register/${domain}`,
         promoCode: null,
         whoisPrivacyFree: true,
         score3y: cfPrice.reg + cfPrice.renewal * 2,
@@ -433,9 +433,11 @@ async function multiTldScan(name) {
     }
   }
 
-  // Sort: available first, then by price
+  // Sort: available first, then taken, then unknown; then by price
+  const availabilityRank = (value) => value === true ? 0 : value === false ? 1 : 2;
   results.sort((a, b) => {
-    if (a.available !== b.available) return a.available ? -1 : 1;
+    const rankDiff = availabilityRank(a.available) - availabilityRank(b.available);
+    if (rankDiff !== 0) return rankDiff;
     return (a.price || 999) - (b.price || 999);
   });
 
@@ -623,14 +625,19 @@ Description: "${description}"`;
         const extensions = tldChecks
           .filter(r => r.status === 'fulfilled')
           .map(r => r.value);
-        
-        const bestAvailable = extensions.find(e => e.available === true);
-        
+
+        const availableExtensions = extensions.filter(e => e.available === true);
+        const bestAvailable = availableExtensions
+          .slice()
+          .sort((a, b) => (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY))[0]
+          || availableExtensions[0]
+          || null;
+
         return {
           name,
           domain: `${name}.com`,
-          available: extensions.some(e => e.available === true),
-          comAvailable: extensions.find(e => e.tld === 'com')?.available || false,
+          available: availableExtensions.length > 0,
+          comAvailable: extensions.find(e => e.tld === 'com')?.available === true,
           extensions,
           bestDeal: bestAvailable ? { domain: bestAvailable.domain, price: bestAvailable.price } : null,
           price: CLOUDFLARE_PRICES['com']?.reg || null,
@@ -645,7 +652,8 @@ Description: "${description}"`;
     return {
       description,
       suggestions,
-      available: suggestions.filter(s => s.available).length,
+      available: suggestions.filter(s => s.available === true).length,
+      comAvailable: suggestions.filter(s => s.comAvailable === true).length,
       total: suggestions.length,
       model: 'llama-3.3-70b',
       checkedAt: new Date().toISOString()
@@ -725,7 +733,7 @@ async function getTrending() {
         topic: t.topic,
         source: t.source,
         extensions,
-        anyAvailable: extensions.some(e => e.available)
+        anyAvailable: extensions.some(e => e.available === true)
       };
     })
   );

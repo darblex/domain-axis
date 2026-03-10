@@ -349,7 +349,8 @@
       font-weight: 600;
     }
     .trend-ext.avail { background: rgba(16,185,129,.15); color: var(--green); }
-    .trend-ext.taken { background: rgba(239,68,68,.1); color: var(--red); opacity: .5; }
+    .trend-ext.taken { background: rgba(239,68,68,.1); color: var(--red); opacity: .65; }
+    .trend-ext.unknown { background: rgba(245,158,11,.12); color: var(--yellow); }
 
     /* ── AI Suggest ── */
     .ai-section {
@@ -464,13 +465,15 @@
     }
     .scan-card:hover { border-color: var(--accent); transform: translateY(-1px); }
     .scan-card.avail { border-left: 3px solid var(--green); }
-    .scan-card.taken { border-left: 3px solid var(--red); opacity: .6; }
+    .scan-card.taken { border-left: 3px solid var(--red); opacity: .7; }
+    .scan-card.unknown { border-left: 3px solid var(--yellow); }
     .scan-card .sc-domain { font-weight: 600; font-size: 1.05rem; }
     .scan-card .sc-name { color: var(--text); }
     .scan-card .sc-tld { color: var(--accent); }
     .scan-card .sc-status { font-size: .8rem; font-weight: 600; }
     .scan-card .sc-status.avail { color: var(--green); }
     .scan-card .sc-status.taken { color: var(--red); }
+    .scan-card .sc-status.unknown { color: var(--yellow); }
     .scan-card .sc-right { display: flex; align-items: center; gap: .6rem; }
     .scan-card .sc-price { color: var(--green); font-weight: 600; font-size: .9rem; }
     .scan-card .sc-btn {
@@ -604,7 +607,7 @@
 
   <div class="search-box">
     <div class="search-wrap">
-      <input type="text" id="searchInput" placeholder="Search any name or domain... (e.g. coolstartup or coolstartup.com)" autofocus>
+      <input type="text" id="searchInput" placeholder="Search any name or domain... (e.g. coolstartup or coolstartup.com)" data-i18n-placeholder="search_placeholder" autofocus>
       <button onclick="doSearch()" data-i18n="search">Search</button>
     </div>
   </div>
@@ -615,9 +618,9 @@
     
     <div class="tabs">
       <div class="tab active" onclick="switchTab('prices')" data-tab="prices">💰 <span data-i18n="tab_prices">Prices</span></div>
-      <div class="tab" onclick="switchTab('whois')" data-tab="whois">📋 WHOIS</div>
-      <div class="tab" onclick="switchTab('dns')" data-tab="dns">🔍 DNS</div>
-      <div class="tab" onclick="switchTab('ssl')" data-tab="ssl">🔒 SSL</div>
+      <div class="tab" onclick="switchTab('whois')" data-tab="whois">📋 <span data-i18n="tab_whois">WHOIS</span></div>
+      <div class="tab" onclick="switchTab('dns')" data-tab="dns">🔍 <span data-i18n="tab_dns">DNS</span></div>
+      <div class="tab" onclick="switchTab('ssl')" data-tab="ssl">🔒 <span data-i18n="tab_ssl">SSL</span></div>
     </div>
 
     <div class="content">
@@ -673,8 +676,8 @@
   </div>
 
   <div class="footer">
-    <p>Domain Axis — Free & Open Source Domain Intelligence</p>
-    <p style="margin-top:.3rem">Prices sourced from tld-list.com & Cloudflare. Not affiliated with any registrar.</p>
+    <p data-i18n="footer_title">Domain Axis — Free & Open Source Domain Intelligence</p>
+    <p style="margin-top:.3rem" data-i18n="footer_disclaimer">Prices sourced from tld-list.com & Cloudflare. Not affiliated with any registrar.</p>
   </div>
 
 <script>
@@ -687,7 +690,11 @@ const i18n = {
   en: {
     tagline: 'Free Domain Intelligence Platform',
     search: 'Search',
+    search_placeholder: 'Search any name or domain... (e.g. coolstartup or coolstartup.com)',
     tab_prices: 'Prices',
+    tab_whois: 'WHOIS',
+    tab_dns: 'DNS',
+    tab_ssl: 'SSL',
     empty_title: 'Find Your Perfect Domain',
     empty_desc: 'Compare prices across 50+ registrars, check availability, WHOIS, DNS & SSL — all free.',
     available: '✅ {domain} is available!',
@@ -728,12 +735,24 @@ const i18n = {
     ai_thinking: 'AI is thinking...',
     ai_no_results: 'No suggestions generated. Try a different description.',
     ai_generated: 'names generated',
+    ai_com_available: 'available on .com',
+    ai_any_available: 'available on any extension',
+    ai_scan_all: 'Scan all',
+    status_available: 'Available',
+    status_taken: 'Taken',
+    status_unknown: 'Unknown',
     trending_title: 'Trending Right Now',
+    footer_title: 'Domain Axis — Free & Open Source Domain Intelligence',
+    footer_disclaimer: 'Prices sourced from tld-list.com & Cloudflare. Not affiliated with any registrar.',
   },
   he: {
     tagline: 'פלטפורמת חיפוש דומיינים חינמית',
     search: 'חפש',
+    search_placeholder: 'חפש שם או דומיין... (למשל coolstartup או coolstartup.com)',
     tab_prices: 'מחירים',
+    tab_whois: 'WHOIS',
+    tab_dns: 'DNS',
+    tab_ssl: 'SSL',
     empty_title: 'מצא את הדומיין המושלם',
     empty_desc: 'השווה מחירים מ-50+ רגיסטרארים, בדוק זמינות, WHOIS, DNS ו-SSL — הכל חינם.',
     available: '✅ {domain} פנוי!',
@@ -774,7 +793,15 @@ const i18n = {
     ai_thinking: 'AI חושב...',
     ai_no_results: 'לא נוצרו הצעות. נסה תיאור אחר.',
     ai_generated: 'שמות נוצרו',
+    ai_com_available: 'פנויים על .com',
+    ai_any_available: 'פנויים על סיומת כלשהי',
+    ai_scan_all: 'סרוק הכל',
+    status_available: 'פנוי',
+    status_taken: 'תפוס',
+    status_unknown: 'לא ידוע',
     trending_title: 'טרנדים עכשיו',
+    footer_title: 'Domain Axis — מודיעין דומיינים חינמי וקוד פתוח',
+    footer_disclaimer: 'המחירים נמשכים מ־tld-list.com ו־Cloudflare. אין קשר רשמי לאף רג׳יסטרר.',
   }
 };
 
@@ -782,10 +809,28 @@ function t(key) {
   return (i18n[lang] && i18n[lang][key]) || i18n.en[key] || key;
 }
 
+function isAvailableStatus(value) { return value === true; }
+function isTakenStatus(value) { return value === false; }
+function isUnknownStatus(value) { return value !== true && value !== false; }
+function availabilityClass(value) {
+  if (isAvailableStatus(value)) return 'avail';
+  if (isTakenStatus(value)) return 'taken';
+  return 'unknown';
+}
+function availabilityLabel(value) {
+  if (isAvailableStatus(value)) return t('status_available');
+  if (isTakenStatus(value)) return t('status_taken');
+  return t('status_unknown');
+}
+
 function updateI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (i18n[lang][key]) el.textContent = i18n[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (i18n[lang][key]) el.setAttribute('placeholder', i18n[lang][key]);
   });
   document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
   document.documentElement.lang = lang;
@@ -809,6 +854,7 @@ if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light');
   document.getElementById('themeBtn').textContent = '☀️';
 }
+updateI18n();
 
 // ── Search ──
 document.getElementById('searchInput').addEventListener('keydown', e => {
@@ -911,16 +957,16 @@ function renderScan(data) {
   
   // Filter results
   let filtered = data.results;
-  if (scanFilter === 'available') filtered = filtered.filter(r => r.available);
+  if (scanFilter === 'available') filtered = filtered.filter(r => r.available === true);
   else if (scanFilter !== 'all') filtered = filtered.filter(r => r.category === scanFilter);
   
   // Grid
   html += `<div class="scan-grid">`;
   filtered.forEach(r => {
-    const status = r.available ? 'avail' : 'taken';
-    const statusText = r.available ? '✅ ' + t('scan_free') : '❌ ' + t('scan_taken_short');
+    const status = availabilityClass(r.available);
+    const statusIcon = isAvailableStatus(r.available) ? '✅' : isTakenStatus(r.available) ? '❌' : '❓';
+    const statusText = `${statusIcon} ${isAvailableStatus(r.available) ? t('scan_free') : isTakenStatus(r.available) ? t('scan_taken_short') : t('status_unknown')}`;
     const price = r.price ? `$${r.price.toFixed(2)}` : '';
-    const renewal = r.renewalPrice ? `/${t('scan_yr')} $${r.renewalPrice.toFixed(2)}` : '';
     
     html += `<div class="scan-card ${status}">
       <div>
@@ -1274,24 +1320,24 @@ async function doAiSuggest() {
     }
     
     let html = `<div style="margin-top:.5rem;font-size:.85rem;color:var(--text2);">
-      ${data.total} ${t('ai_generated')} — ${data.available} ${t('scan_available')} on .com
+      ${data.total} ${t('ai_generated')} — ${data.comAvailable ?? 0} ${t('ai_com_available')} · ${data.available ?? 0} ${t('ai_any_available')}
     </div>`;
     html += `<div class="ai-results">`;
     
     data.suggestions.forEach(s => {
-      const anyAvail = s.available;
       html += `<div class="ai-card" style="flex-direction:column;align-items:stretch;padding:.8rem">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
           <span class="ai-name" style="font-size:1.1rem">${s.name}</span>
-          <button class="ai-search-btn" onclick="searchDomain('${s.name}')" style="padding:.3rem .6rem">🔍 Scan all</button>
+          <button class="ai-search-btn" onclick="searchDomain('${s.name}')" style="padding:.3rem .6rem">🔍 ${t('ai_scan_all')}</button>
         </div>
         <div style="display:flex;gap:.3rem;flex-wrap:wrap">`;
       
       if (s.extensions) {
         s.extensions.forEach(e => {
-          const cls = e.available ? 'avail' : 'taken';
-          const price = e.available && e.price ? ` $${e.price.toFixed(0)}` : '';
-          html += `<span class="trend-ext ${cls}" style="cursor:pointer" onclick="searchDomain('${e.domain}')">.${e.tld}${price}</span>`;
+          const cls = availabilityClass(e.available);
+          const price = e.available === true && e.price ? ` $${e.price.toFixed(0)}` : '';
+          const label = e.available === true ? `.${e.tld}${price}` : e.available === false ? `.${e.tld}` : `.${e.tld} ?`;
+          html += `<span class="trend-ext ${cls}" style="cursor:pointer" onclick="searchDomain('${e.domain}')">${label}</span>`;
         });
       } else {
         const availClass = s.available ? 'yes' : 'no';
@@ -1328,9 +1374,10 @@ async function loadTrending() {
         <div class="trend-exts">`;
       
       t.extensions.forEach(e => {
-        const cls = e.available ? 'avail' : 'taken';
-        const price = e.available && e.price ? ` $${e.price.toFixed(0)}` : '';
-        html += `<span class="trend-ext ${cls}">.${e.tld}${price}</span>`;
+        const cls = availabilityClass(e.available);
+        const price = e.available === true && e.price ? ` $${e.price.toFixed(0)}` : '';
+        const label = e.available === true ? `.${e.tld}${price}` : e.available === false ? `.${e.tld}` : `.${e.tld} ?`;
+        html += `<span class="trend-ext ${cls}">${label}</span>`;
       });
       
       html += `</div></div>`;
